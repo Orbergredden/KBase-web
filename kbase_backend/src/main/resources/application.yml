@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: kbase
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kbase_web_dev?currentSchema=kbase
+    username: kbase
+    password: kbase
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: kbase
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties.hibernate.format_sql: true
+
+server:
+  port: 8080
