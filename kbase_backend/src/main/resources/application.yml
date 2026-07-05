@@ -1,9 +1,9 @@
 spring:
   application:
-    name: kbase
+    name: kbase_rest
   datasource:
     url: jdbc:postgresql://localhost:5432/kbase_web_dev?currentSchema=kbase
-    username: kbase
+    username: kbase_admin
     password: kbase
     driver-class-name: org.postgresql.Driver
   jpa:
