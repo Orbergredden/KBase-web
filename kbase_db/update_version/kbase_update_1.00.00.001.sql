@@ -68,13 +68,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS ind_settings_alias
     ON settings USING btree
     (alias COLLATE pg_catalog."default" ASC NULLS LAST)
     TABLESPACE pg_default;
-*/
+
 INSERT INTO settings (alias,"section",subject,"name",value,descr) VALUES
 	 ('VERSION_DB_BEGIN_DATE','Version','Db','Begin date','05.07.2026',''),
 	 ('VERSION_DB_NUMBER'    ,'Version','Db','number',    '1.00.00.001','begin'),
 	 ('VERSION_DB_END_DATE'  ,'Version','Db','End date',  '05.07.2026','')
 ;
-
+*/
 
 
 
