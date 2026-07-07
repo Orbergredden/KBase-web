@@ -1,6 +1,6 @@
 {
   "name": "kbase-frontend",
-  "version": "0.0.0",
+  "version": "1.00.00.001 2026-07-07",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -30,5 +30,9 @@
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
+  },
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   }
 }
