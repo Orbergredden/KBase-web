@@ -2,39 +2,37 @@
   <!-- Header Bar -->
   <header class="app-header">
     <div class="header-left">
-      <div class="logo-container">
+      <div class="logo-container" (click)="goToHome()">
         <img src="images/icons/KBase_logo_32.png" alt="Logo">
         <span class="logo-text">KBase-web</span>
       </div>
     </div>
 
     <div class="header-right">
-      <button id="header-login-btn" class="btn-login-outline">
-        <i class="pi pi-sign-in"></i>
-        <span>Login</span>
-      </button>
+      @if (authService.isLoggedIn()) {
+        <div class="user-profile-header">
+          <span class="user-greeting">
+            <i class="pi pi-user"></i>
+            <span class="username-text">{{ authService.currentUser()?.username }}</span>
+            <span class="user-role-badge">{{ authService.currentUser()?.role === 'ROLE_ADMIN' ? 'Admin' : 'User' }}</span>
+          </span>
+          <button (click)="logout()" class="btn-login-outline btn-logout">
+            <i class="pi pi-sign-out"></i>
+            <span>Log Out</span>
+          </button>
+        </div>
+      } @else {
+        <button id="header-login-btn" class="btn-login-outline" (click)="goToLogin()">
+          <i class="pi pi-sign-in"></i>
+          <span>Login</span>
+        </button>
+      }
     </div>
   </header>
 
   <!-- Main Content Area -->
   <main class="main-content">
-    <div class="welcome-card">
-      <div class="card-icon-wrapper">
-        <div class="card-icon-circle">
-          <i class="pi pi-database"></i>
-        </div>
-      </div>
-
-      <h1 class="welcome-title">Welcome to KBase</h1>
-      <p class="welcome-subtitle">A modern knowledge management system built on web technologies</p>
-
-      <div class="actions-container">
-        <button id="main-login-btn" class="btn-login-primary">
-          <i class="pi pi-sign-in"></i>
-          <span>Log In</span>
-        </button>
-      </div>
-    </div>
+    <router-outlet />
   </main>
 
   <!-- Footer -->
@@ -47,5 +45,3 @@
     </div>
   </footer>
 </div>
-
-<router-outlet />

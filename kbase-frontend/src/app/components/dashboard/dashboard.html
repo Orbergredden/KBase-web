@@ -1,0 +1,127 @@
+<div class="dashboard-container">
+  <!-- Top Greeting Panel -->
+  <div class="dashboard-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">KBase Workspace</h1>
+      <p class="hero-subtitle">Welcome to your knowledge hub, <strong>{{ authService.currentUser()?.username }}</strong>!</p>
+    </div>
+    <div class="user-meta-card">
+      <div class="meta-item">
+        <i class="pi pi-shield"></i>
+        <div class="meta-text">
+          <span class="meta-label">System Role</span>
+          <span class="meta-value">{{ authService.currentUser()?.role === 'ROLE_ADMIN' ? 'Administrator' : 'User' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Knowledge Base Section -->
+    <div class="grid-main">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-wrapper">
+            <i class="pi pi-book"></i>
+            <h2>Knowledge Base</h2>
+          </div>
+          @if (authService.currentUser()?.privileges.includes('WRITE_PRIVILEGE')) {
+            <button class="btn-action-primary">
+              <i class="pi pi-plus"></i>
+              <span>Create Article</span>
+            </button>
+          }
+        </div>
+
+        <div class="search-bar-container">
+          <div class="search-input-wrapper">
+            <i class="pi pi-search"></i>
+            <input type="text" placeholder="Search articles by title or tags..." />
+          </div>
+        </div>
+
+        <div class="articles-list">
+          @for (article of articles(); track article.id) {
+            <div class="article-item">
+              <div class="article-info">
+                <span class="article-category">{{ article.category }}</span>
+                <h3 class="article-title">{{ article.title }}</h3>
+                <div class="article-meta">
+                  <span><i class="pi pi-user"></i> {{ article.author }}</span>
+                  <span><i class="pi pi-calendar"></i> {{ article.date }}</span>
+                  <span><i class="pi pi-eye"></i> {{ article.views }} views</span>
+                </div>
+              </div>
+              <div class="article-actions">
+                <button class="btn-icon" title="Read"><i class="pi pi-chevron-right"></i></button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar Section -->
+    <div class="grid-sidebar">
+      <!-- Admin Statistics panel (conditional) -->
+      @if (authService.currentUser()?.role === 'ROLE_ADMIN') {
+        <div class="section-card admin-stats-card">
+          <div class="section-header">
+            <div class="section-title-wrapper">
+              <i class="pi pi-cog"></i>
+              <h2>Administration</h2>
+            </div>
+          </div>
+          
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-icon"><i class="pi pi-users"></i></div>
+              <div class="stat-data">
+                <span class="stat-number">{{ usersCount() }}</span>
+                <span class="stat-label">Users</span>
+              </div>
+            </div>
+
+            <div class="stat-box">
+              <div class="stat-icon"><i class="pi pi-sliders-h"></i></div>
+              <div class="stat-data">
+                <span class="stat-number">{{ settingsCount() }}</span>
+                <span class="stat-label">Settings</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-quick-actions">
+            <button class="btn-sidebar-action">
+              <i class="pi pi-user-edit"></i>
+              <span>Manage Users</span>
+            </button>
+            <button class="btn-sidebar-action">
+              <i class="pi pi-sliders-h"></i>
+              <span>Manage Settings</span>
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- System Privileges Panel -->
+      <div class="section-card privileges-card">
+        <div class="section-header">
+          <div class="section-title-wrapper">
+            <i class="pi pi-key"></i>
+            <h2>Your Privileges</h2>
+          </div>
+        </div>
+
+        <div class="privileges-list">
+          @for (priv of authService.currentUser()?.privileges; track priv) {
+            <div class="privilege-badge">
+              <i class="pi pi-check-circle"></i>
+              <span>{{ priv }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
