@@ -1,0 +1,39 @@
+<div class="main-layout">
+  <!-- Thin Header containing PrimeNG Menubar -->
+  <header class="main-header">
+    <p-menubar [model]="menuItems()">
+      <!-- Start Slot: Application Logo (16x16) & Name -->
+      <ng-template #start>
+        <div class="header-brand">
+          <img src="images/icons/KBase_logo_32.png" alt="Logo" class="brand-logo" width="16" height="16" />
+          <span class="brand-name">KBase</span>
+        </div>
+      </ng-template>
+
+      <!-- End Slot: User Icon, Username, and Logout Button -->
+      <ng-template #end>
+        <div class="header-actions">
+          <div class="user-info">
+            <i class="pi pi-user user-icon"></i>
+            <span class="username">{{ authService.currentUser()?.username }}</span>
+          </div>
+          <button class="logout-btn" (click)="logout()" title="Logout">
+            <i class="pi pi-sign-out"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </ng-template>
+    </p-menubar>
+  </header>
+
+  <!-- Main Workspace (Prepared for future development) -->
+  <div class="main-workspace">
+    <div class="workspace-placeholder">
+      <div class="placeholder-icon">
+        <i class="pi pi-compass"></i>
+      </div>
+      <h2>Workspace Ready</h2>
+      <p>Use the navigation menu above to manage articles, sections, and settings.</p>
+    </div>
+  </div>
+</div>

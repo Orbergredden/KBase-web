@@ -10,9 +10,9 @@
 
   <div class="actions-container">
     @if (authService.isLoggedIn()) {
-      <button id="main-dashboard-btn" class="btn-login-primary" (click)="goToDashboard()">
+      <button id="main-page-btn" class="btn-login-primary" (click)="goToMain()">
         <i class="pi pi-arrow-right"></i>
-        <span>Go to Dashboard</span>
+        <span>Go to Main Page</span>
       </button>
     } @else {
       <button id="main-login-btn" class="btn-login-primary" (click)="goToLogin()">

@@ -15,7 +15,7 @@ export class WelcomeComponent {
     this.router.navigate(['/login']);
   }
 
-  goToDashboard(): void {
-    this.router.navigate(['/dashboard']);
+  goToMain(): void {
+    this.router.navigate(['/main']);
   }
 }

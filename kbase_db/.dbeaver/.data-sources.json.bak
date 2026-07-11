@@ -30,6 +30,26 @@
 				},
 				"auth-model": "native"
 			}
+		},
+		"postgres-jdbc-19f313cb7e6-3bca65b523d8b5ec": {
+			"provider": "postgresql",
+			"driver": "postgres-jdbc",
+			"name": "kbase_test",
+			"save-password": true,
+			"configuration": {
+				"host": "localhost",
+				"port": "5432",
+				"database": "kbase_test",
+				"url": "jdbc:postgresql://localhost:5432/kbase_test",
+				"configurationType": "MANUAL",
+				"home": "/usr/lib/postgresql/16",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"provider-properties": {
+					"@dbeaver-show-non-default-db@": "false"
+				},
+				"auth-model": "native"
+			}
 		}
 	},
 	"connection-types": {

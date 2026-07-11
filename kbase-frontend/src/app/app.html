@@ -1,47 +1,51 @@
-<div class="page-container">
-  <!-- Header Bar -->
-  <header class="app-header">
-    <div class="header-left">
-      <div class="logo-container" (click)="goToHome()">
-        <img src="images/icons/KBase_logo_32.png" alt="Logo">
-        <span class="logo-text">KBase-web</span>
-      </div>
-    </div>
-
-    <div class="header-right">
-      @if (authService.isLoggedIn()) {
-        <div class="user-profile-header">
-          <span class="user-greeting">
-            <i class="pi pi-user"></i>
-            <span class="username-text">{{ authService.currentUser()?.username }}</span>
-            <span class="user-role-badge">{{ authService.currentUser()?.role === 'ROLE_ADMIN' ? 'Admin' : 'User' }}</span>
-          </span>
-          <button (click)="logout()" class="btn-login-outline btn-logout">
-            <i class="pi pi-sign-out"></i>
-            <span>Log Out</span>
-          </button>
+@if (!isMainPage()) {
+  <div class="page-container">
+    <!-- Header Bar -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-container" (click)="goToHome()">
+          <img src="images/icons/KBase_logo_32.png" alt="Logo">
+          <span class="logo-text">KBase-web</span>
         </div>
-      } @else {
-        <button id="header-login-btn" class="btn-login-outline" (click)="goToLogin()">
-          <i class="pi pi-sign-in"></i>
-          <span>Login</span>
-        </button>
-      }
-    </div>
-  </header>
+      </div>
 
-  <!-- Main Content Area -->
-  <main class="main-content">
-    <router-outlet />
-  </main>
+      <div class="header-right">
+        @if (authService.isLoggedIn()) {
+          <div class="user-profile-header">
+            <span class="user-greeting">
+              <i class="pi pi-user"></i>
+              <span class="username-text">{{ authService.currentUser()?.username }}</span>
+              <span class="user-role-badge">{{ authService.currentUser()?.role === 'ROLE_ADMIN' ? 'Admin' : 'User' }}</span>
+            </span>
+            <button (click)="logout()" class="btn-login-outline btn-logout">
+              <i class="pi pi-sign-out"></i>
+              <span>Log Out</span>
+            </button>
+          </div>
+        } @else {
+          <button id="header-login-btn" class="btn-login-outline" (click)="goToLogin()">
+            <i class="pi pi-sign-in"></i>
+            <span>Login</span>
+          </button>
+        }
+      </div>
+    </header>
 
-  <!-- Footer -->
-  <footer class="app-footer">
-    <div class="footer-left">
-      <span>Copyright © Igor Makarevich 2026</span>
-    </div>
-    <div class="footer-right">
-      <span>Front: v.{{ version() }} | Back: v.{{ backendVersion() }} | DB: v.{{ dbVersion() }}, {{ dbDate() }}</span>
-    </div>
-  </footer>
-</div>
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <router-outlet />
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span>Copyright © Igor Makarevich 2026</span>
+      </div>
+      <div class="footer-right">
+        <span>Front: v.{{ version() }} | Back: v.{{ backendVersion() }} | DB: v.{{ dbVersion() }}, {{ dbDate() }}</span>
+      </div>
+    </footer>
+  </div>
+} @else {
+  <router-outlet />
+}

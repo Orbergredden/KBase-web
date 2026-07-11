@@ -1,6 +1,8 @@
 import { Component, signal, OnInit, inject } from '@angular/core';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map } from 'rxjs/operators';
 import packageInfo from '../../package.json';
 import { AuthService } from './services/auth.service';
 
@@ -21,12 +23,20 @@ export class App implements OnInit {
   protected readonly dbVersion = signal<string>('завантаження...');
   protected readonly dbDate = signal<string>('завантаження...');
 
+  protected readonly isMainPage = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects.startsWith('/main'))
+    ),
+    { initialValue: this.router.url.startsWith('/main') }
+  );
+
   ngOnInit(): void {
     // Відновлення сесії на старті
     this.authService.initAuth().then((isLoggedIn) => {
       if (isLoggedIn) {
         if (this.router.url === '/' || this.router.url === '/login') {
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/main']);
         }
       }
     });
@@ -54,7 +64,7 @@ export class App implements OnInit {
 
   goToHome(): void {
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/main']);
     } else {
       this.router.navigate(['/']);
     }
