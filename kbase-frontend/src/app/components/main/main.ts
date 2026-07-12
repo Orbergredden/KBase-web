@@ -45,9 +45,10 @@ export class MainComponent {
 
   protected readonly userMenuItems = computed<MenuItem[]>(() => {
     const currentTheme = this.themeService.currentTheme();
+    const isDark = this.themeService.isDarkMode();
     return [
       {
-        label: 'Колірна схема',
+        label: 'Color Scheme',
         icon: 'pi pi-palette',
         items: [
           {
@@ -73,10 +74,15 @@ export class MainComponent {
         ]
       },
       {
+        label: isDark ? 'Light Mode' : 'Dark Mode',
+        icon: isDark ? 'pi pi-sun' : 'pi pi-moon',
+        command: () => this.themeService.toggleDarkMode()
+      },
+      {
         separator: true
       },
       {
-        label: 'Вихід',
+        label: 'Logout',
         icon: 'pi pi-sign-out',
         command: () => this.logout()
       }
