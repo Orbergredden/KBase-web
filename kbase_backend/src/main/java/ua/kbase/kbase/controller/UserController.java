@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ua.kbase.kbase.dto.UserDto;
+import ua.kbase.kbase.dto.UserSettingsUpdateDto;
 import ua.kbase.kbase.entity.Role;
 import ua.kbase.kbase.entity.User;
 import ua.kbase.kbase.repository.RoleRepository;
@@ -95,12 +96,40 @@ public class UserController {
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> getCurrentUser(java.security.Principal principal) {
+        return userRepository.findByUsername(principal.getName())
+                .map(user -> ResponseEntity.ok(convertToDto(user)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<?> updateCurrentUser(java.security.Principal principal, @RequestBody UserSettingsUpdateDto updateRequest) {
+        return userRepository.findByUsername(principal.getName())
+                .map(user -> {
+                    user.setEmail(updateRequest.getEmail());
+                    if (updateRequest.getPassword() != null && !updateRequest.getPassword().trim().isEmpty()) {
+                        user.setPassword(passwordEncoder.encode(updateRequest.getPassword()));
+                    }
+                    User updatedUser = userRepository.save(user);
+                    return ResponseEntity.ok(convertToDto(updatedUser));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     private UserDto convertToDto(User user) {
+        List<String> privileges = List.of();
+        if (user.getRole() != null && user.getRole().getPrivileges() != null) {
+            privileges = user.getRole().getPrivileges().stream()
+                    .map(ua.kbase.kbase.entity.Privilege::getName)
+                    .collect(Collectors.toList());
+        }
         return UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .roleName(user.getRole() != null ? user.getRole().getName() : null)
+                .privileges(privileges)
                 .active(user.isActive())
                 .dateCreated(user.getDateCreated())
                 .dateModified(user.getDateModified())

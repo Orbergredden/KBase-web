@@ -34,4 +34,102 @@
       <p>Use the navigation menu above to manage articles, sections, and settings.</p>
     </div>
   </div>
+
+  <p-dialog 
+    header="Налаштування користувача" 
+    [visible]="showSettingsDialog()" 
+    (visibleChange)="showSettingsDialog.set($event)"
+    [modal]="true" 
+    [style]="{ width: '450px' }" 
+    [draggable]="false" 
+    [resizable]="false"
+    appendTo="body">
+    
+    @if (loadingSettings()) {
+      <div class="settings-loading">
+        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+        <p>Завантаження...</p>
+      </div>
+    } @else {
+      <div class="settings-content">
+        @if (settingsError()) {
+          <div class="settings-message error">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span>{{ settingsError() }}</span>
+          </div>
+        }
+        @if (settingsSuccess()) {
+          <div class="settings-message success">
+            <i class="pi pi-check-circle"></i>
+            <span>Налаштування успішно збережено!</span>
+          </div>
+        }
+
+        <div class="settings-info-card">
+          <div class="info-row">
+            <span class="info-label">Користувач:</span>
+            <span class="info-value bold">{{ authService.currentUser()?.username }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Роль:</span>
+            <span class="role-badge">{{ roleName() }}</span>
+          </div>
+          <div class="info-privileges">
+            <div class="info-label">Привілеї:</div>
+            <div class="privileges-list">
+              @for (priv of privileges(); track priv) {
+                <span class="privilege-badge">{{ priv }}</span>
+              } @empty {
+                <span class="no-privileges">Немає привілеїв</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Електронна пошта</label>
+          <input 
+            pInputText 
+            id="email" 
+            type="email" 
+            [ngModel]="email()" 
+            (ngModelChange)="email.set($event)"
+            class="w-full" 
+            placeholder="example@mail.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Новий пароль (залиште порожнім, щоб не змінювати)</label>
+          <input 
+            pInputText 
+            id="password" 
+            type="password" 
+            [ngModel]="password()" 
+            (ngModelChange)="password.set($event)"
+            class="w-full" 
+            placeholder="••••••••" />
+        </div>
+      </div>
+    }
+
+    <ng-template #footer>
+      <div class="settings-footer">
+        <button 
+          pButton 
+          label="Скасувати" 
+          icon="pi pi-times" 
+          class="p-button-text p-button-secondary" 
+          (click)="showSettingsDialog.set(false)"
+          [disabled]="savingSettings()"></button>
+        <button 
+          pButton 
+          label="Зберегти" 
+          icon="pi pi-check" 
+          class="p-button-primary" 
+          (click)="saveSettings()"
+          [loading]="savingSettings()"
+          [disabled]="loadingSettings() || savingSettings()"></button>
+      </div>
+    </ng-template>
+  </p-dialog>
 </div>

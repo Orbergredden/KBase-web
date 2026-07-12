@@ -20,10 +20,19 @@ export class AuthService {
   private readonly router = inject(Router);
 
   private readonly API_URL = 'http://localhost:8080/api/auth';
+  private readonly USERS_API_URL = 'http://localhost:8080/api/users';
 
   readonly currentUser = signal<any | null>(null);
   readonly accessToken = signal<string | null>(null);
   readonly isLoggedIn = computed(() => this.currentUser() !== null);
+
+  getCurrentUserProfile(): Observable<any> {
+    return this.http.get<any>(`${this.USERS_API_URL}/me`);
+  }
+
+  updateUserSettings(settings: any): Observable<any> {
+    return this.http.put<any>(`${this.USERS_API_URL}/me`, settings);
+  }
 
   private isRefreshing = false;
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);

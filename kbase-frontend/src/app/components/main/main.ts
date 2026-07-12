@@ -1,14 +1,18 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Menubar } from 'primeng/menubar';
 import { TieredMenu } from 'primeng/tieredmenu';
 import { MenuItem } from 'primeng/api';
+import { Dialog } from 'primeng/dialog';
+import { ButtonDirective } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-main',
-  imports: [Menubar, TieredMenu],
+  imports: [Menubar, TieredMenu, Dialog, ButtonDirective, InputText, FormsModule],
   templateUrl: './main.html',
   styleUrl: './main.scss'
 })
@@ -79,6 +83,11 @@ export class MainComponent {
         command: () => this.themeService.toggleDarkMode()
       },
       {
+        label: 'Settings...',
+        icon: 'pi pi-user-edit',
+        command: () => this.openSettings()
+      },
+      {
         separator: true
       },
       {
@@ -88,6 +97,62 @@ export class MainComponent {
       }
     ];
   });
+
+  protected readonly showSettingsDialog = signal(false);
+  protected readonly email = signal('');
+  protected readonly password = signal('');
+  protected readonly roleName = signal('');
+  protected readonly privileges = signal<string[]>([]);
+  protected readonly savingSettings = signal(false);
+  protected readonly loadingSettings = signal(false);
+  protected readonly settingsError = signal('');
+  protected readonly settingsSuccess = signal(false);
+
+  openSettings(): void {
+    this.settingsError.set('');
+    this.settingsSuccess.set(false);
+    this.password.set('');
+    this.loadingSettings.set(true);
+    this.showSettingsDialog.set(true);
+
+    this.authService.getCurrentUserProfile().subscribe({
+      next: (profile: any) => {
+        this.email.set(profile.email || '');
+        this.roleName.set(profile.roleName || '');
+        this.privileges.set(profile.privileges || []);
+        this.loadingSettings.set(false);
+      },
+      error: (err: any) => {
+        console.error('Failed to load user profile', err);
+        this.settingsError.set('Не вдалося завантажити профіль користувача');
+        this.loadingSettings.set(false);
+      }
+    });
+  }
+
+  saveSettings(): void {
+    this.settingsError.set('');
+    this.settingsSuccess.set(false);
+    this.savingSettings.set(true);
+
+    const payload: any = { email: this.email() };
+    if (this.password().trim()) {
+      payload.password = this.password();
+    }
+
+    this.authService.updateUserSettings(payload).subscribe({
+      next: (updatedUser: any) => {
+        this.savingSettings.set(false);
+        this.settingsSuccess.set(true);
+        this.password.set('');
+      },
+      error: (err: any) => {
+        console.error('Failed to update settings', err);
+        this.settingsError.set(err.error?.message || 'Не вдалося зберегти налаштування');
+        this.savingSettings.set(false);
+      }
+    });
+  }
 
   logout(): void {
     this.authService.logout();
