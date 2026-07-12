@@ -124,7 +124,7 @@ export class MainComponent {
       },
       error: (err: any) => {
         console.error('Failed to load user profile', err);
-        this.settingsError.set('Не вдалося завантажити профіль користувача');
+        this.settingsError.set('Failed to load user profile');
         this.loadingSettings.set(false);
       }
     });
@@ -148,7 +148,7 @@ export class MainComponent {
       },
       error: (err: any) => {
         console.error('Failed to update settings', err);
-        this.settingsError.set(err.error?.message || 'Не вдалося зберегти налаштування');
+        this.settingsError.set(err.error?.message || 'Failed to save settings');
         this.savingSettings.set(false);
       }
     });

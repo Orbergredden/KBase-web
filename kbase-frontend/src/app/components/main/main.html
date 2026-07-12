@@ -36,7 +36,7 @@
   </div>
 
   <p-dialog 
-    header="Налаштування користувача" 
+    header="User Settings" 
     [visible]="showSettingsDialog()" 
     (visibleChange)="showSettingsDialog.set($event)"
     [modal]="true" 
@@ -48,7 +48,7 @@
     @if (loadingSettings()) {
       <div class="settings-loading">
         <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-        <p>Завантаження...</p>
+        <p>Loading...</p>
       </div>
     } @else {
       <div class="settings-content">
@@ -61,33 +61,33 @@
         @if (settingsSuccess()) {
           <div class="settings-message success">
             <i class="pi pi-check-circle"></i>
-            <span>Налаштування успішно збережено!</span>
+            <span>Settings saved successfully!</span>
           </div>
         }
 
         <div class="settings-info-card">
           <div class="info-row">
-            <span class="info-label">Користувач:</span>
+            <span class="info-label">User:</span>
             <span class="info-value bold">{{ authService.currentUser()?.username }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Роль:</span>
+            <span class="info-label">Role:</span>
             <span class="role-badge">{{ roleName() }}</span>
           </div>
           <div class="info-privileges">
-            <div class="info-label">Привілеї:</div>
+            <div class="info-label">Privileges:</div>
             <div class="privileges-list">
               @for (priv of privileges(); track priv) {
                 <span class="privilege-badge">{{ priv }}</span>
               } @empty {
-                <span class="no-privileges">Немає привілеїв</span>
+                <span class="no-privileges">No privileges</span>
               }
             </div>
           </div>
         </div>
 
         <div class="form-group">
-          <label for="email">Електронна пошта</label>
+          <label for="email">Email</label>
           <input 
             pInputText 
             id="email" 
@@ -99,7 +99,7 @@
         </div>
 
         <div class="form-group">
-          <label for="password">Новий пароль (залиште порожнім, щоб не змінювати)</label>
+          <label for="password">New password (leave blank to keep current)</label>
           <input 
             pInputText 
             id="password" 
@@ -116,14 +116,14 @@
       <div class="settings-footer">
         <button 
           pButton 
-          label="Скасувати" 
+          label="Cancel" 
           icon="pi pi-times" 
           class="p-button-text p-button-secondary" 
           (click)="showSettingsDialog.set(false)"
           [disabled]="savingSettings()"></button>
         <button 
           pButton 
-          label="Зберегти" 
+          label="Save" 
           icon="pi pi-check" 
           class="p-button-primary" 
           (click)="saveSettings()"
