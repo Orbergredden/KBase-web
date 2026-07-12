@@ -10,17 +10,15 @@
         </div>
       </ng-template>
 
-      <!-- End Slot: User Icon, Username, and Logout Button -->
+      <!-- End Slot: User Icon, Username, and Dropdown Menu -->
       <ng-template #end>
         <div class="header-actions">
-          <div class="user-info">
+          <div class="user-info" (click)="userMenu.toggle($event)">
             <i class="pi pi-user user-icon"></i>
             <span class="username">{{ authService.currentUser()?.username }}</span>
+            <i class="pi pi-chevron-down user-dropdown-icon"></i>
           </div>
-          <button class="logout-btn" (click)="logout()" title="Logout">
-            <i class="pi pi-sign-out"></i>
-            <span>Logout</span>
-          </button>
+          <p-tieredMenu #userMenu [model]="userMenuItems()" [popup]="true" appendTo="body"></p-tieredMenu>
         </div>
       </ng-template>
     </p-menubar>

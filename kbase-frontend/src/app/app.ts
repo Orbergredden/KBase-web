@@ -5,6 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
 import packageInfo from '../../package.json';
 import { AuthService } from './services/auth.service';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ export class App implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   protected readonly authService = inject(AuthService);
+  protected readonly themeService = inject(ThemeService);
 
   protected readonly title = signal('kbase-frontend');
   protected readonly version = signal(packageInfo.version);
