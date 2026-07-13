@@ -7,6 +7,10 @@ import packageInfo from '../../package.json';
 import { AuthService } from './services/auth.service';
 import { ThemeService } from './services/theme.service';
 
+const BASE_URL = typeof window !== 'undefined' && window.location.port === '4200'
+  ? 'https://localhost:8443'
+  : '';
+
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet],
@@ -44,7 +48,7 @@ export class App implements OnInit {
     });
 
     // Завантаження інформації про версії
-    this.http.get<{ backend: string; db: string; dbDate: string }>('http://localhost:8080/api/info')
+    this.http.get<{ backend: string; db: string; dbDate: string }>(`${BASE_URL}/api/info`)
       .subscribe({
         next: (info) => {
           this.backendVersion.set(info.backend);

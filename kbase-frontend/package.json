@@ -1,6 +1,6 @@
 {
   "name": "kbase-frontend",
-  "version": "1.00.00.002, 2026-07-08",
+  "version": "1.00.00.003 (empty site), 2026-07-13",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

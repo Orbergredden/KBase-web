@@ -33,19 +33,47 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/info/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                /*
+                 * .authorizeHttpRequests(auth -> auth
+                 * .requestMatchers("/api/auth/**", "/api/info/**").permitAll()
+                 * .anyRequest().authenticated()
+                 * )
+                 */
+                .authorizeHttpRequests(auth -> auth
+                        // 1. Дозволяємо API авторизації та публічну інформацію
+                        .requestMatchers("/api/auth/**", "/api/info/**").permitAll()
+
+                        // 2. Дозволяємо статичні ресурси Angular (index.html, js, css, іконки,
+                        // картинки)
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/favicon.ico",
+                                "/*.js",
+                                "/*.css",
+                                "/*.png",
+                                "/*.jpg",
+                                "/*.svg",
+                                "/*.json",
+                                "/assets/**",
+                                "/media/**",
+                                "/images/**")
+                        .permitAll()
+
+                        // 3. Дозволяємо доступ до відомих сторінок Angular (додайте ваші URL-шляхи,
+                        // якщо треба)
+                        // Або просто відкриваємо GET запити до будь-яких HTML/сторінкових маршрутів
+                        .requestMatchers("/login", "/register", "/articles/**", "/dashboard").permitAll()
+
+                        // 4. Усі інші запити (наприклад, решта API) вимагають авторизації
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -64,9 +92,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:4200",   // Angular dev (HTTP)
-            "https://localhost:4200",  // Angular dev (HTTPS, якщо ng serve --ssl)
-            "https://localhost"        // продакшн
+                "http://localhost:4200", // Angular dev (HTTP)
+                "https://localhost:4200", // Angular dev (HTTPS, якщо ng serve --ssl)
+                "https://localhost" // продакшн
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));

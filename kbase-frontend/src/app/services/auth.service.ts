@@ -12,15 +12,19 @@ interface AuthResponse {
   privileges: string[];
 }
 
+// Визначаємо базу для запитів: у розробці (порт 4200) шлемо на бекенд, у проді – відносний шлях
+const BASE_URL = typeof window !== 'undefined' && window.location.port === '4200'
+  ? 'https://localhost:8443'
+  : '';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-
-  private readonly API_URL = 'http://localhost:8080/api/auth';
-  private readonly USERS_API_URL = 'http://localhost:8080/api/users';
+  private readonly API_URL = `${BASE_URL}/api/auth`;
+  private readonly USERS_API_URL = `${BASE_URL}/api/users`;
 
   readonly currentUser = signal<any | null>(null);
   readonly accessToken = signal<string | null>(null);
@@ -49,7 +53,7 @@ export class AuthService {
     const refreshToken = this.getRefreshToken();
     if (refreshToken) {
       this.http.post(`${this.API_URL}/logout`, { refreshToken }).subscribe({
-        next: () => {},
+        next: () => { },
         error: (err) => console.error('Logout error on backend', err)
       });
     }
