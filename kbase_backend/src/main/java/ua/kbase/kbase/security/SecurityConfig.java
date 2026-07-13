@@ -91,11 +91,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:4200", // Angular dev (HTTP)
-                "https://localhost:4200", // Angular dev (HTTPS, якщо ng serve --ssl)
-                "https://localhost" // продакшн
-        ));
+        // setAllowedOriginPatterns("*") is compatible with allowCredentials=true
+        // (unlike setAllowedOrigins("*") which Spring Security forbids with credentials).
+        // This is safe for an intranet deployment where the prod host may vary.
+        // For a public internet app, replace with explicit origins.
+        configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
         configuration.setExposedHeaders(Collections.singletonList("Authorization"));

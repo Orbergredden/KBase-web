@@ -12,7 +12,7 @@ import ua.kbase.kbase.service.AuthService;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+// CORS is handled globally by SecurityConfig — no @CrossOrigin needed here.
 public class AuthController {
 
     private final AuthService authService;
