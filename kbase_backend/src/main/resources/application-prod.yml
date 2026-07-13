@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}?currentSchema=${DB_SCHEMA}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+  jpa:
+    show-sql: false   # В проді не потрібен
+
+server:
+  port: ${SERVER_PORT:8443}
+  ssl:
+    enabled: true
+    # If the keystore lives outside the jar, set SSL_KEYSTORE_PATH; otherwise the
+    # classpath keystore from the base profile is used automatically.
+    key-store: ${SSL_KEYSTORE_PATH:classpath:keystore.p12}
+    key-store-password: ${SSL_PASS}
+    key-store-type: ${SSL_KEYSTORE_TYPE:PKCS12}
+    key-alias: ${SSL_ALIAS:kbase}

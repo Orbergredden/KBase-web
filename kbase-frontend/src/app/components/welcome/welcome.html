@@ -1,0 +1,24 @@
+<div class="welcome-card">
+  <div class="card-icon-wrapper">
+    <div class="card-icon-circle">
+      <i class="pi pi-database"></i>
+    </div>
+  </div>
+
+  <h1 class="welcome-title">Welcome to KBase</h1>
+  <p class="welcome-subtitle">A modern knowledge management system built on web technologies</p>
+
+  <div class="actions-container">
+    @if (authService.isLoggedIn()) {
+      <button id="main-page-btn" class="btn-login-primary" (click)="goToMain()">
+        <i class="pi pi-arrow-right"></i>
+        <span>Go to Main Page</span>
+      </button>
+    } @else {
+      <button id="main-login-btn" class="btn-login-primary" (click)="goToLogin()">
+        <i class="pi pi-sign-in"></i>
+        <span>Log In</span>
+      </button>
+    }
+  </div>
+</div>

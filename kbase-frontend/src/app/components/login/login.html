@@ -1,0 +1,77 @@
+<div class="login-card">
+  <div class="card-icon-wrapper">
+    <div class="card-icon-circle">
+      <i class="pi pi-lock"></i>
+    </div>
+  </div>
+
+  <h1 class="login-title">System Login</h1>
+  <p class="login-subtitle">Enter your credentials to access the Knowledge Base</p>
+
+  <form (submit)="onSubmit($event)" class="login-form">
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <div class="form-group">
+      <label for="username">Username</label>
+      <div class="input-wrapper">
+        <i class="pi pi-user input-icon"></i>
+        <input 
+          type="text" 
+          id="username" 
+          name="username" 
+          [value]="username()" 
+          (input)="updateUsername($any($event.target).value)"
+          placeholder="Enter username..." 
+          required 
+          autocomplete="username"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <div class="input-wrapper">
+        <i class="pi pi-key input-icon"></i>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          [value]="password()" 
+          (input)="updatePassword($any($event.target).value)"
+          placeholder="Enter password..." 
+          required 
+          autocomplete="current-password"
+        />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <label class="checkbox-container">
+        <input 
+          type="checkbox" 
+          id="rememberMe" 
+          name="rememberMe" 
+          [checked]="rememberMe()" 
+          (change)="toggleRememberMe()"
+        />
+        <span class="checkmark"></span>
+        <span class="label-text">Remember me</span>
+      </label>
+    </div>
+
+    <button type="submit" class="btn-login-submit" [disabled]="isLoading()">
+      @if (isLoading()) {
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Logging in...</span>
+      } @else {
+        <i class="pi pi-sign-in"></i>
+        <span>Log In</span>
+      }
+    </button>
+  </form>
+</div>

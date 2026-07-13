@@ -17,4 +17,10 @@ spring:
     properties.hibernate.format_sql: true
 
 server:
-  port: 8080
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12
+    key-store-password: kbase_ssl_pass
+    key-store-type: PKCS12
+    key-alias: kbase
