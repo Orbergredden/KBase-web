@@ -1,3 +1,5 @@
 #!/bin/bash
 
-npm start
+#npm start
+
+ng serve --ssl

@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### SSL / Security ###
+src/main/resources/keystore.p12
+src/main/resources/*.p12
+src/main/resources/*.jks
