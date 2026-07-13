@@ -1,39 +1,35 @@
 package ua.kbase.kbase.config;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Forwards all non-API, non-static routes to Angular's index.html (SPA support).
- * <p>
- * IMPORTANT: The regex {@code [^\\.]*} prevents matching paths whose *first* segment
- * contains a dot, but the trailing {@code /**} wildcard still matches sub-paths that
- * contain dots (e.g. {@code /media/primeicons-xxx.woff2}).
- * To guard against this, we inspect the final path segment at runtime and reject
- * requests that look like file downloads so that Spring's ResourceHttpRequestHandler
- * can serve the actual static asset from {@code resources/static/}.
+ * Forwards Angular SPA routes to {@code index.html}.
+ *
+ * <p>How it works:<br>
+ * Spring Boot's {@code ResourceHttpRequestHandler} is registered at {@code /**} with
+ * the lowest possible precedence — controller mappings always win. That means we must
+ * keep static-asset prefixes ({@code /media}, {@code /assets}, {@code /images}) out of
+ * the mapping patterns entirely, so those requests bypass this controller and reach the
+ * resource handler directly.
+ *
+ * <p>Pattern breakdown for {@code /{path:(?!media$|assets$|images$)[^\\.]*}}:
+ * <ul>
+ *   <li>{@code (?!media$|assets$|images$)} — negative lookahead: the path segment must
+ *       NOT be exactly one of the known static-asset directory names.</li>
+ *   <li>{@code [^\\.]*} — the segment must contain no dot (excludes {@code favicon.ico},
+ *       hashed JS/CSS files, etc. which are served directly by the resource handler).</li>
+ * </ul>
  */
 @Controller
 public class SpaController {
 
     @RequestMapping(value = {
             "/",
-            "/{path:[^\\.]*}",
-            "/{path:[^\\.]*}/**"
+            "/{path:(?!media$|assets$|images$)[^\\.]*}",
+            "/{path:(?!media$|assets$|images$)[^\\.]*}/**"
     })
-    public String forward(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        // Extract the last path segment (after the final '/')
-        String lastSegment = uri.substring(uri.lastIndexOf('/') + 1);
-        // If the last segment has a file extension, this is a static-asset request.
-        // Throw 404 so ResourceHttpRequestHandler gets a chance to serve it,
-        // or the client receives a proper "not found" instead of index.html.
-        if (!lastSegment.isEmpty() && lastSegment.contains(".")) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+    public String forward() {
         return "forward:/index.html";
     }
 }
