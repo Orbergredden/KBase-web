@@ -63,7 +63,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://localhost:4200", "https://localhost"));
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:4200",   // Angular dev (HTTP)
+            "https://localhost:4200",  // Angular dev (HTTPS, якщо ng serve --ssl)
+            "https://localhost"        // продакшн
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
         configuration.setExposedHeaders(Collections.singletonList("Authorization"));
