@@ -1,5 +1,4 @@
 -->>
-/*
 CREATE DATABASE kbase_web_dev
     WITH
     OWNER = kbase
@@ -74,11 +73,5 @@ INSERT INTO settings (alias,"section",subject,"name",value,descr) VALUES
 	 ('VERSION_DB_NUMBER'    ,'Version','Db','number',    '1.00.00.001','begin'),
 	 ('VERSION_DB_END_DATE'  ,'Version','Db','End date',  '05.07.2026','')
 ;
-*/
-
-
-
-
-
 --<<
 
