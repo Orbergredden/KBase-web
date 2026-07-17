@@ -1,6 +1,6 @@
 -->>
 SET search_path = kbase, public, pg_catalog;
-
+/*
 -- ######## перевіряємо щоб БД була попередньої версії ############################
 do $$
 <<check_version>>
@@ -33,7 +33,103 @@ update settings
 		date_modified = now(),
 		user_modified = "current_user"()
 where alias = 'VERSION_DB_END_DATE' 
+;
+--######## create table section_type #########################
+CREATE TABLE IF NOT EXISTS section_types
+(
+    id bigint NOT NULL,
+    name character varying(25) COLLATE pg_catalog."default",
+    descr character varying(100) COLLATE pg_catalog."default",
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_created character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
+    user_modified character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
+    CONSTRAINT pk_infotype_id PRIMARY KEY (id)
+);
 
+ALTER TABLE IF EXISTS section_types OWNER to kbase;
+GRANT ALL ON TABLE section_types TO kbase;
+
+INSERT INTO section_types (id, name, descr)
+VALUES 
+(1, 'документ', 'Тип Розділу для документів'),
+(2, 'словник', 'Тип Розділу для словників')
+;
+
+--######## create table icons
+CREATE SEQUENCE IF NOT EXISTS seq_icons
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_icons OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS icons
+(
+    id bigint NOT NULL DEFAULT nextval('seq_icons'::regclass),
+    parent_id bigint NOT NULL,
+    name character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    descr character varying(50) COLLATE pg_catalog."default",
+    image bytea,
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_icons_id PRIMARY KEY (id),
+    CONSTRAINT fk_icons_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_icons_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS icons OWNER to kbase;
+GRANT ALL ON TABLE icons TO kbase;
+
+CREATE INDEX IF NOT EXISTS idx_icons_parent_id ON icons (parent_id ASC NULLS LAST);
+
+--######## create table logs ##################################################
+CREATE SEQUENCE IF NOT EXISTS seq_logs
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_logs OWNER TO kbase;
+-------------------------------------------------------
+CREATE TABLE IF NOT EXISTS logs
+(
+    id bigint NOT NULL DEFAULT nextval('seq_logs'::regclass),
+    log_type character varying(20) COLLATE pg_catalog."default",
+    text character varying(255) COLLATE pg_catalog."default",
+    date_created timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    CONSTRAINT pk_logs PRIMARY KEY (id),
+    CONSTRAINT fk_logs_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS logs OWNER to kbase;
+GRANT ALL ON TABLE logs TO kbase;
+
+COMMENT ON TABLE logs IS 'Various logs';
+COMMENT ON COLUMN logs.log_type IS 'Log type. For example, error, admin, app.section.delete etc.';
+*/
+
+
+
+
+
+--//TODO create tables - current
+/*
 --######## create table sections #########################
 CREATE SEQUENCE IF NOT EXISTS seq_sections
     INCREMENT 1
@@ -50,269 +146,55 @@ CREATE TABLE IF NOT EXISTS sections
     parent_id bigint,
     name character varying(255) COLLATE pg_catalog."default",
     descr character varying(255) COLLATE pg_catalog."default",
-    icon_id bigint,
-    template_main character varying(50) COLLATE pg_catalog."default",
-    template_main_tree integer,
-    template_main_root bigint,
-    icon_id_root bigint,
-    icon_id_def bigint,
-    theme_id bigint,
-    cache_type integer,
+    section_type_id bigint NOT NULL, -- тип інформації розділу : документ, словник, в перспективі Галерея
+    show_level int default 0,    -- 0 - приватний, 1 - для зареєстрованих користувачів, 2 - публічний
+    section_category_id bigint NOT NULL, -- категорія розділу (наприклад Заявки-Закрита, Роботи, Документація)
+    section_category_id_dir bigint,      -- директорія звідки будуть вибиратися Категорії у Підрозділах
+    section_category_id_def bigint,      -- Категорія по замовчуванню для Підрозділів
     date_created timestamp without time zone DEFAULT now(),
     date_modified timestamp without time zone DEFAULT now(),
-    user_created character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-    user_modified character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
     date_modified_info timestamp without time zone,
-    type_id bigint NOT NULL DEFAULT 1,
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
     CONSTRAINT pk_sections_id PRIMARY KEY (id),
-    CONSTRAINT fk_sections_icon_id FOREIGN KEY (icon_id)
-        REFERENCES kbase.icons (id) MATCH SIMPLE
+    CONSTRAINT fk_sections_section_type_id FOREIGN KEY (section_type_id)
+        REFERENCES section_types (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_sections_section_category_id FOREIGN KEY (section_category_id)
+        REFERENCES section_categories (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_sections_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_sections_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-)
+);
 
-TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS kbase.sections
-    OWNER to kbase;
-
-REVOKE ALL ON TABLE kbase.sections FROM kbase_user;
-REVOKE ALL ON TABLE kbase.sections FROM kbase_view;
-
+ALTER TABLE IF EXISTS sections OWNER to kbase;
 GRANT ALL ON TABLE kbase.sections TO kbase;
 
-GRANT SELECT ON TABLE kbase.sections TO kbase_user;
+COMMENT ON TABLE sections IS 'Розділи Бази Знань у вигляді дерева';
+COMMENT ON COLUMN sections.section_type_id IS 'Тип інформації розділу: 1 - документ, 2 - словник, в перспективі 3 - Галерея';
+COMMENT ON COLUMN sections.show_level IS 'Рівень доступу: 0 - приватний, 1 - для зареєстрованих користувачів, 2 - публічний';
+COMMENT ON COLUMN sections.section_category_id IS 'Категорія розділу (наприклад: Заявки-Закрита, Роботи, Документація)';
+COMMENT ON COLUMN sections.section_category_id_dir IS 'Директорія, звідки будуть вибиратися категорії у підрозділах';
+COMMENT ON COLUMN sections.section_category_id_def IS 'Категорія за замовчуванням для підрозділів';
+COMMENT ON COLUMN sections.date_modified_info IS 'Остання зміна інфоблоків';
 
-GRANT SELECT ON TABLE kbase.sections TO kbase_view;
-
-COMMENT ON TABLE kbase.sections
-    IS 'Разделы Базы Знаний в виде дерева';
-
-COMMENT ON COLUMN kbase.sections.icon_id
-    IS 'Пиктограмма раздела';
-
-COMMENT ON COLUMN kbase.sections.template_main
-    IS 'Тег стилю головного шаблона';
-
-COMMENT ON COLUMN kbase.sections.template_main_tree
-    IS '0 - стиль діє лише на ций розділ, 1 - розповсюджується також на всі підрозділи';
-
-COMMENT ON COLUMN kbase.sections.template_main_root
-    IS 'Коренева директорія головних стилів';
-
-COMMENT ON COLUMN kbase.sections.icon_id_root
-    IS 'Корневая иконка поддерева для выбора иконок для данного и дочерних разделов';
-
-COMMENT ON COLUMN kbase.sections.icon_id_def
-    IS 'Иконка по умолчанию для данного и дочерних разделов';
-
-COMMENT ON COLUMN kbase.sections.theme_id
-    IS 'Тема шаблонов для показа документа.';
-
-COMMENT ON COLUMN kbase.sections.cache_type
-    IS 'Тип кеширования : 1 - документы кешируются на локальном диске; 2 - кешируются в БД; 3 - кешируются на диске только обязательные файлы';
-
-COMMENT ON COLUMN kbase.sections.user_created
-    IS 'Тот, кто создал запись';
-
-COMMENT ON COLUMN kbase.sections.user_modified
-    IS 'Тот, кто вносил последние изменения в запись';
-
-COMMENT ON COLUMN kbase.sections.date_modified_info
-    IS 'Последнее изменение инфоблоков';
-
-COMMENT ON COLUMN kbase.sections.type_id
-    IS 'тип інформації розділу : 1 - документ, 2 - словник';
--- Index: ind_sections_icon_id
-
--- DROP INDEX IF EXISTS kbase.ind_sections_icon_id;
-
-CREATE INDEX IF NOT EXISTS ind_sections_icon_id
-    ON kbase.sections USING btree
-    (icon_id ASC NULLS LAST)
-    TABLESPACE pg_default;
--- Index: ind_sections_parent_id
-
--- DROP INDEX IF EXISTS kbase.ind_sections_parent_id;
-
-CREATE INDEX IF NOT EXISTS ind_sections_parent_id
-    ON kbase.sections USING btree
-    (parent_id ASC NULLS LAST)
-    TABLESPACE pg_default;
-
-
-
-
---------- recomendations
-/*
-
-
-
+CREATE INDEX IF NOT EXISTS idx_sections_parent_id ON sections (parent_id ASC NULLS LAST);
 */
 
 
 
---######## create sequences ################################
-CREATE SEQUENCE IF NOT EXISTS seq_roles
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 9223372036854775807
-    CACHE 1;
 
-CREATE SEQUENCE IF NOT EXISTS seq_privileges
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 9223372036854775807
-    CACHE 1;
 
-CREATE SEQUENCE IF NOT EXISTS seq_users
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 9223372036854775807
-    CACHE 1;
+--// TODO
 
-CREATE SEQUENCE IF NOT EXISTS seq_refresh_tokens
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 9223372036854775807
-    CACHE 1;
 
---######## create table roles ################################
-CREATE TABLE IF NOT EXISTS roles
-(
-    id bigint NOT NULL DEFAULT nextval('seq_roles'::regclass),
-    name character varying(50) COLLATE pg_catalog."default" NOT NULL,
-    descr character varying(200) COLLATE pg_catalog."default",
-    date_created timestamp without time zone DEFAULT now(),
-    date_modified timestamp without time zone DEFAULT now(),
-    user_created character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-    user_modified character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-    CONSTRAINT pk_roles_id PRIMARY KEY (id),
-    CONSTRAINT k_roles_name UNIQUE (name)
-)
-TABLESPACE pg_default;
-
---######## create table privileges ################################
-CREATE TABLE IF NOT EXISTS privileges
-(
-    id bigint NOT NULL DEFAULT nextval('seq_privileges'::regclass),
-    name character varying(50) COLLATE pg_catalog."default" NOT NULL,
-    descr character varying(200) COLLATE pg_catalog."default",
-    date_created timestamp without time zone DEFAULT now(),
-    date_modified timestamp without time zone DEFAULT now(),
-    user_created character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-    user_modified character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-    CONSTRAINT pk_privileges_id PRIMARY KEY (id),
-    CONSTRAINT k_privileges_name UNIQUE (name)
-)
-TABLESPACE pg_default;
-
---######## create table role_privileges ################################
-CREATE TABLE IF NOT EXISTS role_privileges
-(
-    role_id bigint NOT NULL,
-    privilege_id bigint NOT NULL,
-    CONSTRAINT pk_role_privileges PRIMARY KEY (role_id, privilege_id),
-    CONSTRAINT fk_role_privileges_role FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE CASCADE,
-    CONSTRAINT fk_role_privileges_privilege FOREIGN KEY (privilege_id) REFERENCES privileges (id) ON DELETE CASCADE
-)
-TABLESPACE pg_default;
-
---######## create table users ################################
-CREATE TABLE IF NOT EXISTS users
-(
-    id bigint NOT NULL DEFAULT nextval('seq_users'::regclass),
-    username character varying(50) COLLATE pg_catalog."default" NOT NULL,
-    password character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    email character varying(100) COLLATE pg_catalog."default",
-    role_id bigint,
-    active boolean NOT NULL DEFAULT true,
-    date_created timestamp without time zone DEFAULT now(),
-    date_modified timestamp without time zone DEFAULT now(),
-    user_created character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-    user_modified character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-    CONSTRAINT pk_users_id PRIMARY KEY (id),
-    CONSTRAINT k_users_username UNIQUE (username),
-    CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE SET NULL
-)
-TABLESPACE pg_default;
-
---######## create table refresh_tokens ################################
-CREATE TABLE IF NOT EXISTS refresh_tokens
-(
-    id bigint NOT NULL DEFAULT nextval('seq_refresh_tokens'::regclass),
-    token character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    user_id bigint NOT NULL,
-    expiry_date timestamp without time zone NOT NULL,
-    CONSTRAINT pk_refresh_tokens_id PRIMARY KEY (id),
-    CONSTRAINT k_refresh_tokens_token UNIQUE (token),
-    CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-)
-TABLESPACE pg_default;
-
---######## set owners and permissions ################################
-ALTER SEQUENCE seq_roles OWNER TO kbase;
-ALTER SEQUENCE seq_privileges OWNER TO kbase;
-ALTER SEQUENCE seq_users OWNER TO kbase;
-ALTER SEQUENCE seq_refresh_tokens OWNER TO kbase;
-
-ALTER TABLE roles OWNER to kbase;
-ALTER TABLE privileges OWNER to kbase;
-ALTER TABLE role_privileges OWNER to kbase;
-ALTER TABLE users OWNER to kbase;
-ALTER TABLE refresh_tokens OWNER to kbase;
-
-GRANT ALL ON TABLE roles TO kbase;
-GRANT ALL ON TABLE privileges TO kbase;
-GRANT ALL ON TABLE role_privileges TO kbase;
-GRANT ALL ON TABLE users TO kbase;
-GRANT ALL ON TABLE refresh_tokens TO kbase;
-
---######## insert default dictionary data ################################
-INSERT INTO roles (name, descr) VALUES 
-('ROLE_ADMIN', 'Адміністратор системи з повним доступом'),
-('ROLE_USER', 'Користувач системи з правом перегляду та редагування')
-ON CONFLICT (name) DO NOTHING;
-
-INSERT INTO privileges (name, descr) VALUES 
-('READ_PRIVILEGE', 'Дозвіл на перегляд Бази Знань'),
-('WRITE_PRIVILEGE', 'Дозвіл на додавання/редагування статей'),
-('DELETE_PRIVILEGE', 'Дозвіл на видалення статей'),
-('ADMIN_PRIVILEGE', 'Дозвіл на адміністрування користувачів')
-ON CONFLICT (name) DO NOTHING;
-
--- Link ROLE_ADMIN to all privileges
-INSERT INTO role_privileges (role_id, privilege_id)
-SELECT r.id, p.id FROM roles r, privileges p
-WHERE r.name = 'ROLE_ADMIN' AND p.name IN ('READ_PRIVILEGE', 'WRITE_PRIVILEGE', 'DELETE_PRIVILEGE', 'ADMIN_PRIVILEGE')
-ON CONFLICT DO NOTHING;
-
--- Link ROLE_USER to READ and WRITE privileges
-INSERT INTO role_privileges (role_id, privilege_id)
-SELECT r.id, p.id FROM roles r, privileges p
-WHERE r.name = 'ROLE_USER' AND p.name IN ('READ_PRIVILEGE', 'WRITE_PRIVILEGE')
-ON CONFLICT DO NOTHING;
-
---######## insert default users ################################
--- Passwords BCrypt-hashed:
--- 'admin' -> $2a$10$dXJ3ADWyyTXFlKtyTqchPu57sOHVCx3c6ghf3q7/c6qR9Xl6Jj8W.
--- 'user' -> $2a$10$lRy.xVwXkQy5m42hP6g85eV9l3XgA/uB1wXq/l94G1vX6/5hU5pDe
-INSERT INTO users (username, password, email, role_id, active)
-SELECT 'admin', '$2a$10$dXJ3ADWyyTXFlKtyTqchPu57sOHVCx3c6ghf3q7/c6qR9Xl6Jj8W.', 'admin@kbase.ua', r.id, true
-FROM roles r WHERE r.name = 'ROLE_ADMIN'
-ON CONFLICT (username) DO NOTHING;
-
-INSERT INTO users (username, password, email, role_id, active)
-SELECT 'user', '$2a$10$lRy.xVwXkQy5m42hP6g85eV9l3XgA/uB1wXq/l94G1vX6/5hU5pDe', 'user@kbase.ua', r.id, true
-FROM roles r WHERE r.name = 'ROLE_USER'
-ON CONFLICT (username) DO NOTHING;
-
---######## update settings version ################################
-UPDATE settings SET value = '1.00.00.002' WHERE alias = 'VERSION_DB_NUMBER';
-UPDATE settings SET value = '08.07.2026' WHERE alias = 'VERSION_DB_END_DATE';
 
 --<<
