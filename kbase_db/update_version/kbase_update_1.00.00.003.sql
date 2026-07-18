@@ -122,8 +122,61 @@ GRANT ALL ON TABLE logs TO kbase;
 
 COMMENT ON TABLE logs IS 'Various logs';
 COMMENT ON COLUMN logs.log_type IS 'Log type. For example, error, admin, app.section.delete etc.';
-*/
 
+--######## create roles for view #####################################################
+-- 1. Create a non‑login role that will hold the read‑only privileges
+CREATE ROLE kbase_viewer NOLOGIN;
+ 
+-- 2. Grant read‑only access on the relevant schemas
+GRANT USAGE ON SCHEMA kbase TO kbase_viewer;
+ 
+-- 3. Grant SELECT on all existing tables, views, and materialized views
+DO $$
+DECLARE
+    obj RECORD;
+BEGIN
+    -- tables
+    FOR obj IN
+        SELECT schemaname, tablename
+        FROM pg_tables
+        WHERE schemaname IN ('kbase')
+    LOOP
+        EXECUTE format('GRANT SELECT ON TABLE %I.%I TO kbase_viewer', obj.schemaname, obj.tablename);
+    END LOOP;
+ 
+    -- views
+    FOR obj IN
+        SELECT schemaname, viewname
+        FROM pg_views
+        WHERE schemaname IN ('kbase')
+    LOOP
+        EXECUTE format('GRANT SELECT ON TABLE %I.%I TO kbase_viewer', obj.schemaname, obj.viewname);
+    END LOOP;
+ 
+    -- materialized views
+    FOR obj IN
+        SELECT schemaname, matviewname
+        FROM pg_matviews
+        WHERE schemaname IN ('kbase')
+    LOOP
+        EXECUTE format('GRANT SELECT ON TABLE %I.%I TO kbase_viewer', obj.schemaname, obj.matviewname);
+    END LOOP;
+END $$;
+ 
+-- 4. Ensure that any future tables, views, or materialized views created in these schemas
+--    automatically grant SELECT to kbase_viewer
+ALTER DEFAULT PRIVILEGES IN SCHEMA kbase  GRANT SELECT ON TABLES TO kbase_viewer;
+ 
+-- 5. Create a login role that can connect to the database and inherit the read‑only rights
+CREATE ROLE kbase_viewer_ai_agents LOGIN PASSWORD 'kbase';
+ 
+-- 6. Allow the login role to connect to the database
+GRANT CONNECT ON DATABASE kbase_web_dev TO kbase_viewer_ai_agents;
+ 
+-- 7. Make the login role a member of the read‑only role
+GRANT kbase_viewer TO kbase_viewer_ai_agents;
+*/
+--######## 
 
 
 
