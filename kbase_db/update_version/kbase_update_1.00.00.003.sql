@@ -484,9 +484,128 @@ COMMENT ON COLUMN sections.section_category_id_def IS 'Категорія за �
 COMMENT ON COLUMN sections.date_modified_info IS 'Остання зміна інфоблоків';
 
 CREATE INDEX IF NOT EXISTS idx_sections_parent_id ON sections (parent_id ASC NULLS LAST);
+
+--######## create table section_document_info_block_type #########################
+CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_type
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_section_document_info_block_type OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS section_document_info_block_type
+(
+    id bigint NOT NULL DEFAULT nextval('seq_section_document_info_block_type'::regclass),
+    name character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    descr character varying(500) COLLATE pg_catalog."default",
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_section_document_info_block_type_id PRIMARY KEY (id),
+    CONSTRAINT fk_section_document_info_block_type_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_type_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS section_document_info_block_type OWNER to kbase;
+GRANT ALL ON TABLE section_document_info_block_type TO kbase;
+
+COMMENT ON TABLE section_document_info_block_type IS 'Типи інфоблоків для документів';
+COMMENT ON COLUMN section_document_info_block_type.name IS 'Назва типу інфоблоку';
+
+INSERT INTO section_document_info_block_type (id, name, descr, user_id_created, user_id_modified)
+VALUES 
+(1, 'Текст', 'Текстовий інфоблок', 1, 1),
+(2, 'Картинка', 'Інфоблок зображення', 1, 1),
+(3, 'Файл', 'Інфоблок файлу', 1, 1)
+ON CONFLICT (id) DO NOTHING;
+
+--######## create table section_document_info_block_type_components #########################
+CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_type_components
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_section_document_info_block_type_components OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS section_document_info_block_type_components
+(
+    id bigint NOT NULL DEFAULT nextval('seq_section_document_info_block_type_components'::regclass),
+    section_document_info_block_type_id bigint NOT NULL,
+    name character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    descr character varying(500) COLLATE pg_catalog."default",
+    component_type smallint NOT NULL CHECK (component_type IN (1, 2, 3, 4, 5)),
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_section_document_info_block_type_components_id PRIMARY KEY (id),
+    CONSTRAINT fk_section_document_info_block_type_components_type_id FOREIGN KEY (section_document_info_block_type_id)
+        REFERENCES section_document_info_block_type (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_section_document_info_block_type_components_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_type_components_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS section_document_info_block_type_components OWNER to kbase;
+GRANT ALL ON TABLE section_document_info_block_type_components TO kbase;
+
+COMMENT ON TABLE section_document_info_block_type_components IS 'Компоненти, з яких складається тип інфоблоку';
+COMMENT ON COLUMN section_document_info_block_type_components.component_type IS 'Тип компонента: 1 - текст, 2 - картинка, 3 - файл, 4 - ціле число, 5 - логічне значення';
+
+-- Components for "Текст" (id=1)
+INSERT INTO section_document_info_block_type_components (id, section_document_info_block_type_id, name, descr, component_type, user_id_created, user_id_modified)
+VALUES 
+(1, 1, 'title', 'Заголовок', 1, 1, 1),
+(2, 1, 'text', 'Текст', 1, 1, 1),
+(3, 1, 'is_show_title', 'Показувати заголовок', 5, 1, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- Components for "Картинка" (id=2)
+INSERT INTO section_document_info_block_type_components (id, section_document_info_block_type_id, name, descr, component_type, user_id_created, user_id_modified)
+VALUES 
+(4, 2, 'title', 'Заголовок', 1, 1, 1),
+(5, 2, 'image', 'Зображення', 2, 1, 1),
+(6, 2, 'width', 'Ширина', 4, 1, 1),
+(7, 2, 'height', 'Висота', 4, 1, 1),
+(8, 2, 'descr', 'Опис', 1, 1, 1),
+(9, 2, 'text', 'Текст', 1, 1, 1),
+(10, 2, 'is_show_title', 'Показувати заголовок', 5, 1, 1),
+(11, 2, 'is_show_descr', 'Показувати опис', 5, 1, 1),
+(12, 2, 'is_show_text', 'Показувати текст', 5, 1, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- Components for "Файл" (id=3)
+INSERT INTO section_document_info_block_type_components (id, section_document_info_block_type_id, name, descr, component_type, user_id_created, user_id_modified)
+VALUES 
+(13, 3, 'title', 'Заголовок', 1, 1, 1),
+(14, 3, 'file_body', 'Вміст файлу', 3, 1, 1),
+(15, 3, 'file_name', 'Назва файлу', 1, 1, 1),
+(16, 3, 'icon_id', 'Іконка файлу', 4, 1, 1),
+(17, 3, 'descr', 'Опис', 1, 1, 1),
+(18, 3, 'text', 'Текст', 1, 1, 1),
+(19, 3, 'is_show_title', 'Показувати заголовок', 5, 1, 1),
+(20, 3, 'is_show_descr', 'Показувати опис', 5, 1, 1),
+(21, 3, 'is_show_text', 'Показувати текст', 5, 1, 1)
+ON CONFLICT (id) DO NOTHING;
 */
-
-
 
 
 
