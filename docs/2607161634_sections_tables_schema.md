@@ -1,34 +1,52 @@
 # Роблю структуру даних для Розділів
 ```sql
-kbase.sections
-    id bigint NOT NULL DEFAULT nextval('kbase.seq_sections'::regclass),
-    parent_id bigint,
-    name character varying(255) COLLATE pg_catalog."default",
-    descr character varying(255) COLLATE pg_catalog."default",
-    type_id bigint NOT NULL DEFAULT 1, -- -- тип інформації розділу : 1 - документ, 2 - словник, в перспективі Галерея
-    show_level int default 0,    -- 0 - приватний, 1 - для зареєстрованих користувачів, 2 - публічний
-    category_id bigint NOT NULL, -- категорія розділу (наприклад Заявки, Роботи, Документація)
-    date_created timestamp without time zone DEFAULT now(),
-    date_modified timestamp without time zone DEFAULT now(),
-    user_created character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-    user_modified character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-    date_modified_info timestamp without time zone    -- остання зміна інфоблоків
-``` 
-```sql
-kbase.info_block_headers  -- заголовки інфо блоків Розділів
-    id bigint NOT NULL DEFAULT nextval('kbase.seq_info'::regclass),
-    section_id bigint NOT NULL,
-    info_block_type_id bigint NOT NULL,  -- тип інформаційного блока (текст, картинка, файл, ...)
-    style_id bigint,  -- стиль показу інфо блока
-    "position" bigint, -- позиція в списку інфо блоків Розділа
-    name character varying(255) COLLATE pg_catalog."default",
-    descr character varying(255) COLLATE pg_catalog."default",
-    date_created timestamp without time zone DEFAULT now(),
-    date_modified timestamp without time zone DEFAULT now(),
-    user_created character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-    user_modified character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
-```
-```sql
+Cтвории ще такі таблички
+section_document_info_block_type - типи інфоблоків
+    id
+    name
+    descr
+    date/user
+
+section_document_info_block_type_components  -- компоненти з яких складається тип інфо блоку
+    id
+    section_document_info_block_type_id
+    name
+    descr
+    component_type -- 1 - текст, 2 - картинка, 3 - файл, 4 - ціле число, 5 - логічне значення
+    date/user
+
+Додай такі компоненти :  
+    Текст :  
+        title - текст  
+        text - текст  
+        is_show_title - логічне  
+    Картинка :   
+        title - 1  
+        image - 2  
+        width - 4  
+        height - 4  
+        descr - 1  
+        text - 1  
+        is_show_title - 5  
+        is_show_descr - 5  
+        is_show_text  - 5  
+    Файл :  
+        title - 1  
+        file_body - 3   
+        file_name - 1  
+        icon_id -- асоційована з файлом іконка  
+        descr - 1  
+        text - 1  
+        is_show_title - 5  
+        is_show_descr - 5  
+        is_show_text  - 5  
+
+
+
+
+
+-- в назві додати Секшен Документ
+
 kbase.info_block_type  -- типи інфоблоків
     id bigint NOT NULL,
     name character varying(25) COLLATE pg_catalog."default",
@@ -78,6 +96,25 @@ kbase.info_block_type_components  -- компоненти з яких склад
         is_show_descr - 5  
         is_show_text  - 5  
 ```
+
+
+
+
+```sql
+kbase.info_block_headers  -- заголовки інфо блоків Розділів
+    id bigint NOT NULL DEFAULT nextval('kbase.seq_info'::regclass),
+    section_id bigint NOT NULL,
+    info_block_type_id bigint NOT NULL,  -- тип інформаційного блока (текст, картинка, файл, ...)
+    style_id bigint,  -- стиль показу інфо блока
+    "position" bigint, -- позиція в списку інфо блоків Розділа
+    name character varying(255) COLLATE pg_catalog."default",
+    descr character varying(255) COLLATE pg_catalog."default",
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_created character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
+    user_modified character varying(30) COLLATE pg_catalog."default" DEFAULT "current_user"(),
+```
+
 
 ```sql
 kbase.info_block_components_text  -- тут зберігаються компоненти типів 1 - текст

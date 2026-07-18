@@ -371,16 +371,62 @@ COMMENT ON COLUMN template_files.body_bin IS 'Вміст бінарного фа
 CREATE INDEX IF NOT EXISTS idx_template_files_parent_id ON template_files (parent_id ASC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_template_files_is_dir ON template_files (is_dir);
 CREATE INDEX IF NOT EXISTS idx_template_files_is_reserved ON template_files (is_reserved);
-*/
 
+--######## create table section_categories #########################
+CREATE SEQUENCE IF NOT EXISTS seq_section_categories
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
 
+ALTER SEQUENCE seq_section_categories OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS section_categories
+(
+    id bigint NOT NULL DEFAULT nextval('seq_section_categories'::regclass),
+    parent_id bigint,
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    descr character varying(500) COLLATE pg_catalog."default",
+    icon_id bigint,
+    template_id bigint,
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_section_categories_id PRIMARY KEY (id),
+    CONSTRAINT fk_section_categories_parent_id FOREIGN KEY (parent_id)
+        REFERENCES section_categories (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_section_categories_icon_id FOREIGN KEY (icon_id)
+        REFERENCES icons (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_categories_template_id FOREIGN KEY (template_id)
+        REFERENCES templates (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_categories_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_categories_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
 
+ALTER TABLE IF EXISTS section_categories OWNER to kbase;
+GRANT ALL ON TABLE section_categories TO kbase;
 
+COMMENT ON TABLE section_categories IS 'Категорії Розділів у вигляді дерева';
+COMMENT ON COLUMN section_categories.parent_id IS 'Батьківська категорія';
+COMMENT ON COLUMN section_categories.icon_id IS 'Іконка категорії';
+COMMENT ON COLUMN section_categories.template_id IS 'Шаблон для розділів цієї категорії';
 
+CREATE INDEX IF NOT EXISTS idx_section_categories_parent_id ON section_categories (parent_id ASC NULLS LAST);
 
-
---//TODO create tables - current
-/*
 --######## create table sections #########################
 CREATE SEQUENCE IF NOT EXISTS seq_sections
     INCREMENT 1
