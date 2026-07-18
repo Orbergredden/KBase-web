@@ -175,8 +175,206 @@ GRANT CONNECT ON DATABASE kbase_web_dev TO kbase_viewer_ai_agents;
  
 -- 7. Make the login role a member of the read‑only role
 GRANT kbase_viewer TO kbase_viewer_ai_agents;
+
+--######## create table template_color_themes #########################
+CREATE SEQUENCE IF NOT EXISTS seq_template_color_themes
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_template_color_themes OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS template_color_themes
+(
+    id bigint NOT NULL DEFAULT nextval('seq_template_color_themes'::regclass),
+    name character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    type character varying(10) COLLATE pg_catalog."default" NOT NULL CHECK (type IN ('light', 'dark')),
+    is_default boolean NOT NULL DEFAULT false,
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_template_color_themes_id PRIMARY KEY (id),
+    CONSTRAINT fk_template_color_themes_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_template_color_themes_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS template_color_themes OWNER to kbase;
+GRANT ALL ON TABLE template_color_themes TO kbase;
+
+COMMENT ON TABLE template_color_themes IS 'Кольорові теми для шаблонів';
+COMMENT ON COLUMN template_color_themes.type IS 'Тип теми: light - світла, dark - темна';
+COMMENT ON COLUMN template_color_themes.is_default IS 'Теми за замовчуванням, повинна бути одна світла і одна темна';
+
+INSERT INTO template_color_themes (id, name, type, is_default, user_id_created, user_id_modified)
+VALUES 
+(1, 'Стандартна світла', 'light', true, 1, 1),
+(2, 'Стандартна темна', 'dark', true, 1, 1)
+ON CONFLICT (id) DO NOTHING;
+
+--######## create table templates #########################
+CREATE SEQUENCE IF NOT EXISTS seq_templates
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_templates OWNER TO kbase;
+-----------------------------------------------
+CREATE TABLE IF NOT EXISTS templates
+(
+    id bigint NOT NULL DEFAULT nextval('seq_templates'::regclass),
+    parent_id bigint,
+    is_dir boolean NOT NULL DEFAULT false,
+    is_reserved boolean NOT NULL DEFAULT false,
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    descr character varying(500) COLLATE pg_catalog."default",
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_templates_id PRIMARY KEY (id),
+    CONSTRAINT fk_templates_parent_id FOREIGN KEY (parent_id)
+        REFERENCES templates (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_templates_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_templates_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS templates OWNER to kbase;
+GRANT ALL ON TABLE templates TO kbase;
+
+COMMENT ON TABLE templates IS 'Шаблони документів у вигляді дерева (директорії та шаблони)';
+COMMENT ON COLUMN templates.parent_id IS 'Батьківський елемент (для деревової структури)';
+COMMENT ON COLUMN templates.is_dir IS 'true - директорія, false - шаблон (кінцевий елемент)';
+COMMENT ON COLUMN templates.is_reserved IS 'Зарезервовані елементи';
+
+CREATE INDEX IF NOT EXISTS idx_templates_parent_id ON templates (parent_id ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS idx_templates_is_dir ON templates (is_dir);
+
+--######## create table template_bodies #########################
+CREATE SEQUENCE IF NOT EXISTS seq_template_bodies
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_template_bodies OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS template_bodies
+(
+    id bigint NOT NULL DEFAULT nextval('seq_template_bodies'::regclass),
+    template_id bigint NOT NULL,
+    template_color_theme_id bigint NOT NULL,
+    body text COLLATE pg_catalog."default",
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_template_bodies_id PRIMARY KEY (id),
+    CONSTRAINT fk_template_bodies_template_id FOREIGN KEY (template_id)
+        REFERENCES templates (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_template_bodies_template_color_theme_id FOREIGN KEY (template_color_theme_id)
+        REFERENCES template_color_themes (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_template_bodies_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_template_bodies_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT uk_template_bodies_template_theme UNIQUE (template_id, template_color_theme_id)
+);
+
+ALTER TABLE IF EXISTS template_bodies OWNER to kbase;
+GRANT ALL ON TABLE template_bodies TO kbase;
+
+COMMENT ON TABLE template_bodies IS 'Тіла шаблонів для кожної кольорової теми';
+COMMENT ON COLUMN template_bodies.body IS 'HTML/текст тіла шаблону';
+
+CREATE INDEX IF NOT EXISTS idx_template_bodies_template_id ON template_bodies (template_id);
+CREATE INDEX IF NOT EXISTS idx_template_bodies_template_color_theme_id ON template_bodies (template_color_theme_id);
+
+--######## create table template_files #########################
+CREATE SEQUENCE IF NOT EXISTS seq_template_files
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_template_files OWNER TO kbase;
+-----------------------------------------------
+CREATE TABLE IF NOT EXISTS template_files
+(
+    id bigint NOT NULL DEFAULT nextval('seq_template_files'::regclass),
+    parent_id bigint,
+    is_dir boolean NOT NULL DEFAULT false,
+    is_reserved boolean NOT NULL DEFAULT false,
+    file_type smallint NOT NULL CHECK (file_type IN (1, 2, 3)),
+    file_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    descr character varying(255) COLLATE pg_catalog."default",
+    body text COLLATE pg_catalog."default",
+    body_bin bytea,
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_template_files_id PRIMARY KEY (id),
+    CONSTRAINT fk_template_files_parent_id FOREIGN KEY (parent_id)
+        REFERENCES template_files (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_template_files_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_template_files_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS template_files OWNER to kbase;
+GRANT ALL ON TABLE template_files TO kbase;
+
+COMMENT ON TABLE template_files IS 'Файли шаблонів (картинки, CSS, JS, бінарні) у вигляді дерева';
+COMMENT ON COLUMN template_files.parent_id IS 'Батьківська директорія';
+COMMENT ON COLUMN template_files.is_dir IS 'true - директорія, false - файл';
+COMMENT ON COLUMN template_files.is_reserved IS 'Зарезервовані файли, ті що використовуються в шаблонах';
+COMMENT ON COLUMN template_files.file_type IS 'Тип файлу: 1 - текстовий, 2 - картинка, 3 - бінарний';
+COMMENT ON COLUMN template_files.body IS 'Вміст текстового файлу';
+COMMENT ON COLUMN template_files.body_bin IS 'Вміст бінарного файлу';
+
+CREATE INDEX IF NOT EXISTS idx_template_files_parent_id ON template_files (parent_id ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS idx_template_files_is_dir ON template_files (is_dir);
+CREATE INDEX IF NOT EXISTS idx_template_files_is_reserved ON template_files (is_reserved);
 */
---######## 
+
+
+
 
 
 
@@ -241,6 +439,7 @@ COMMENT ON COLUMN sections.date_modified_info IS 'Остання зміна ін
 
 CREATE INDEX IF NOT EXISTS idx_sections_parent_id ON sections (parent_id ASC NULLS LAST);
 */
+
 
 
 
