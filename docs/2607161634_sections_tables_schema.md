@@ -1,12 +1,12 @@
 # Роблю структуру даних для Розділів
 
-Додай в кінець файла , перед TODO створення таких таблиць
-
 kbase.info_block_headers  -- заголовки інфо блоків Розділів
     id bigint NOT NULL DEFAULT nextval('kbase.seq_info'::regclass),
     section_id bigint NOT NULL,
+    
     info_block_type_id bigint NOT NULL,  -- тип інформаційного блока (текст, картинка, файл, ...)
     style_id bigint,  -- стиль показу інфо блока
+    
     "position" bigint, -- позиція в списку інфо блоків Розділа
     name character varying(255) COLLATE pg_catalog."default",
     descr character varying(255) COLLATE pg_catalog."default",
