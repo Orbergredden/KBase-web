@@ -1,6 +1,6 @@
 -->>
 SET search_path = kbase, public, pg_catalog;
-/*
+
 -- ######## перевіряємо щоб БД була попередньої версії ############################
 do $$
 <<check_version>>
@@ -22,7 +22,7 @@ end check_version $$;
 -- ######## update table Settings for new version ############################
 update settings
 	set value = '1.00.00.003',
-		descr = 'find info',
+		descr = 'create structure',
 		date_modified = now(),
 		user_modified = "current_user"()
 where alias = 'VERSION_DB_NUMBER'
@@ -34,6 +34,7 @@ update settings
 		user_modified = "current_user"()
 where alias = 'VERSION_DB_END_DATE' 
 ;
+/*
 --######## create table section_type #########################
 CREATE TABLE IF NOT EXISTS section_types
 (
