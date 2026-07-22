@@ -606,9 +606,9 @@ VALUES
 (20, 3, 'is_show_descr', 'Показувати опис', 5, 1, 1),
 (21, 3, 'is_show_text', 'Показувати текст', 5, 1, 1)
 ON CONFLICT (id) DO NOTHING;
-*/
+
 --######## create table section_document_info_block_styles #########################
-/*CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_styles
+CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_styles
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -662,6 +662,214 @@ COMMENT ON COLUMN section_document_info_block_styles.template_id IS 'Шабло�
 
 CREATE INDEX IF NOT EXISTS idx_section_document_info_block_styles_parent_id ON section_document_info_block_styles (parent_id ASC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_section_document_info_block_styles_template_id ON section_document_info_block_styles (template_id);
+*/
+
+--######## create table section_document_info_block_headers #########################
+/*CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_headers
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_section_document_info_block_headers OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS section_document_info_block_headers
+(
+    id bigint NOT NULL DEFAULT nextval('seq_section_document_info_block_headers'::regclass),
+    section_id bigint NOT NULL,
+    section_document_info_block_type_id bigint NOT NULL,
+    section_document_info_block_style_id bigint,
+    "position" bigint,
+    name character varying(255) COLLATE pg_catalog."default",
+    descr character varying(500) COLLATE pg_catalog."default",
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_section_document_info_block_headers_id PRIMARY KEY (id),
+    CONSTRAINT fk_section_document_info_block_headers_section_id FOREIGN KEY (section_id)
+        REFERENCES sections (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_section_document_info_block_headers_type_id FOREIGN KEY (section_document_info_block_type_id)
+        REFERENCES section_document_info_block_type (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_headers_style_id FOREIGN KEY (section_document_info_block_style_id)
+        REFERENCES section_document_info_block_styles (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_headers_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_headers_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS section_document_info_block_headers OWNER to kbase;
+GRANT ALL ON TABLE section_document_info_block_headers TO kbase;
+
+COMMENT ON TABLE section_document_info_block_headers IS 'Заголовки інфо блоків Розділів';
+COMMENT ON COLUMN section_document_info_block_headers.section_id IS 'Розділ';
+COMMENT ON COLUMN section_document_info_block_headers.section_document_info_block_type_id IS 'Тип інформаційного блока';
+COMMENT ON COLUMN section_document_info_block_headers.section_document_info_block_style_id IS 'Стиль показу інфо блока';
+COMMENT ON COLUMN section_document_info_block_headers.position IS 'Позиція в списку інфо блоків Розділа';
+
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_headers_section_id ON section_document_info_block_headers (section_id);
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_headers_type_id ON section_document_info_block_headers (section_document_info_block_type_id);
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_headers_style_id ON section_document_info_block_headers (section_document_info_block_style_id);
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_headers_position ON section_document_info_block_headers (position);
+
+--######## create table section_document_info_block_components_text #########################
+CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_components_text
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_section_document_info_block_components_text OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS section_document_info_block_components_text
+(
+    id bigint NOT NULL DEFAULT nextval('seq_section_document_info_block_components_text'::regclass),
+    section_document_info_block_header_id bigint NOT NULL,
+    section_document_info_block_type_component_id bigint NOT NULL,
+    "value" text COLLATE pg_catalog."default",
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_section_document_info_block_components_text_id PRIMARY KEY (id),
+    CONSTRAINT fk_section_document_info_block_components_text_header_id FOREIGN KEY (section_document_info_block_header_id)
+        REFERENCES section_document_info_block_headers (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_section_document_info_block_components_text_type_component_id FOREIGN KEY (section_document_info_block_type_component_id)
+        REFERENCES section_document_info_block_type_components (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_components_text_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_components_text_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS section_document_info_block_components_text OWNER to kbase;
+GRANT ALL ON TABLE section_document_info_block_components_text TO kbase;
+
+COMMENT ON TABLE section_document_info_block_components_text IS 'Компоненти типів 1 - текст';
+COMMENT ON COLUMN section_document_info_block_components_text.section_document_info_block_header_id IS 'Заголовок інфо блоку';
+COMMENT ON COLUMN section_document_info_block_components_text.section_document_info_block_type_component_id IS 'Тип компонента';
+
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_components_text_header_id ON section_document_info_block_components_text (section_document_info_block_header_id);
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_components_text_type_component_id ON section_document_info_block_components_text (section_document_info_block_type_component_id);
+
+--######## create table section_document_info_block_components_binary #########################
+CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_components_binary
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_section_document_info_block_components_binary OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS section_document_info_block_components_binary
+(
+    id bigint NOT NULL DEFAULT nextval('seq_section_document_info_block_components_binary'::regclass),
+    section_document_info_block_header_id bigint NOT NULL,
+    section_document_info_block_type_component_id bigint NOT NULL,
+    "value" bytea,
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_section_document_info_block_components_binary_id PRIMARY KEY (id),
+    CONSTRAINT fk_section_document_info_block_components_binary_header_id FOREIGN KEY (section_document_info_block_header_id)
+        REFERENCES section_document_info_block_headers (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_section_document_info_block_components_binary_type_component_id FOREIGN KEY (section_document_info_block_type_component_id)
+        REFERENCES section_document_info_block_type_components (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_components_binary_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_components_binary_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS section_document_info_block_components_binary OWNER to kbase;
+GRANT ALL ON TABLE section_document_info_block_components_binary TO kbase;
+
+COMMENT ON TABLE section_document_info_block_components_binary IS 'Компоненти типів 2 - картинка, 3 - файл';
+COMMENT ON COLUMN section_document_info_block_components_binary.section_document_info_block_header_id IS 'Заголовок інфо блоку';
+COMMENT ON COLUMN section_document_info_block_components_binary.section_document_info_block_type_component_id IS 'Тип компонента';
+
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_components_binary_header_id ON section_document_info_block_components_binary (section_document_info_block_header_id);
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_components_binary_type_component_id ON section_document_info_block_components_binary (section_document_info_block_type_component_id);
+
+--######## create table section_document_info_block_components_number #########################
+CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_components_number
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_section_document_info_block_components_number OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS section_document_info_block_components_number
+(
+    id bigint NOT NULL DEFAULT nextval('seq_section_document_info_block_components_number'::regclass),
+    section_document_info_block_header_id bigint NOT NULL,
+    section_document_info_block_type_component_id bigint NOT NULL,
+    "value" bigint,
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_section_document_info_block_components_number_id PRIMARY KEY (id),
+    CONSTRAINT fk_section_document_info_block_components_number_header_id FOREIGN KEY (section_document_info_block_header_id)
+        REFERENCES section_document_info_block_headers (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_section_document_info_block_components_number_type_component_id FOREIGN KEY (section_document_info_block_type_component_id)
+        REFERENCES section_document_info_block_type_components (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_components_number_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_components_number_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS section_document_info_block_components_number OWNER to kbase;
+GRANT ALL ON TABLE section_document_info_block_components_number TO kbase;
+
+COMMENT ON TABLE section_document_info_block_components_number IS 'Компоненти типів 4 - ціле число, 5 - логічне значення';
+COMMENT ON COLUMN section_document_info_block_components_number.section_document_info_block_header_id IS 'Заголовок інфо блоку';
+COMMENT ON COLUMN section_document_info_block_components_number.section_document_info_block_type_component_id IS 'Тип компонента';
+
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_components_number_header_id ON section_document_info_block_components_number (section_document_info_block_header_id);
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_components_number_type_component_id ON section_document_info_block_components_number (section_document_info_block_type_component_id);
 */
 
 
