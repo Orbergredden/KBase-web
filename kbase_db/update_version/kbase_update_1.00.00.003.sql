@@ -1,6 +1,6 @@
 -->>
 SET search_path = kbase, public, pg_catalog;
-
+/*
 -- ######## перевіряємо щоб БД була попередньої версії ############################
 do $$
 <<check_version>>
@@ -34,7 +34,7 @@ update settings
 		user_modified = "current_user"()
 where alias = 'VERSION_DB_END_DATE' 
 ;
-/*
+
 --######## create table section_type #########################
 CREATE TABLE IF NOT EXISTS section_types
 (
@@ -607,6 +607,64 @@ VALUES
 (21, 3, 'is_show_text', 'Показувати текст', 5, 1, 1)
 ON CONFLICT (id) DO NOTHING;
 */
+--######## create table section_document_info_block_styles #########################
+/*CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_styles
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_section_document_info_block_styles OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS section_document_info_block_styles
+(
+    id bigint NOT NULL DEFAULT nextval('seq_section_document_info_block_styles'::regclass),
+    parent_id bigint,
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    descr character varying(500) COLLATE pg_catalog."default",
+    icon_id bigint,
+    template_id bigint,
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_section_document_info_block_styles_id PRIMARY KEY (id),
+    CONSTRAINT fk_section_document_info_block_styles_parent_id FOREIGN KEY (parent_id)
+        REFERENCES section_document_info_block_styles (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_section_document_info_block_styles_icon_id FOREIGN KEY (icon_id)
+        REFERENCES icons (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE SET NULL,
+    CONSTRAINT fk_section_document_info_block_styles_template_id FOREIGN KEY (template_id)
+        REFERENCES templates (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE SET NULL,
+    CONSTRAINT fk_section_document_info_block_styles_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_document_info_block_styles_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS section_document_info_block_styles OWNER to kbase;
+GRANT ALL ON TABLE section_document_info_block_styles TO kbase;
+
+COMMENT ON TABLE section_document_info_block_styles IS 'Стилі інфоблоків: шаблон та іконка для відображення';
+COMMENT ON COLUMN section_document_info_block_styles.parent_id IS 'Батьківський стиль (для ієрархії)';
+COMMENT ON COLUMN section_document_info_block_styles.icon_id IS 'Іконка стилю';
+COMMENT ON COLUMN section_document_info_block_styles.template_id IS 'Шаблон для рендерингу';
+
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_styles_parent_id ON section_document_info_block_styles (parent_id ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS idx_section_document_info_block_styles_template_id ON section_document_info_block_styles (template_id);
+*/
+
+
 
 
 
