@@ -662,10 +662,9 @@ COMMENT ON COLUMN section_document_info_block_styles.template_id IS 'Шабло�
 
 CREATE INDEX IF NOT EXISTS idx_section_document_info_block_styles_parent_id ON section_document_info_block_styles (parent_id ASC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_section_document_info_block_styles_template_id ON section_document_info_block_styles (template_id);
-*/
 
 --######## create table section_document_info_block_headers #########################
-/*CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_headers
+CREATE SEQUENCE IF NOT EXISTS seq_section_document_info_block_headers
     INCREMENT 1
     START 1
     MINVALUE 1
@@ -871,10 +870,100 @@ COMMENT ON COLUMN section_document_info_block_components_number.section_document
 CREATE INDEX IF NOT EXISTS idx_section_document_info_block_components_number_header_id ON section_document_info_block_components_number (section_document_info_block_header_id);
 CREATE INDEX IF NOT EXISTS idx_section_document_info_block_components_number_type_component_id ON section_document_info_block_components_number (section_document_info_block_type_component_id);
 */
+--######## create table section_documents #########################
+CREATE SEQUENCE IF NOT EXISTS seq_section_documents
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
 
+ALTER SEQUENCE seq_section_documents OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS section_documents
+(
+    id bigint NOT NULL DEFAULT nextval('seq_section_documents'::regclass),
+    section_id bigint NOT NULL,
+    body text COLLATE pg_catalog."default",
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_section_documents_id PRIMARY KEY (id),
+    CONSTRAINT fk_section_documents_section_id FOREIGN KEY (section_id)
+        REFERENCES sections (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_section_documents_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_documents_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
 
+ALTER TABLE IF EXISTS section_documents OWNER to kbase;
+GRANT ALL ON TABLE section_documents TO kbase;
 
+COMMENT ON TABLE section_documents IS 'Скомпільовані з інфо блоків документи';
+COMMENT ON COLUMN section_documents.body IS 'HTML/текст скомпільованого документа';
 
+CREATE INDEX IF NOT EXISTS idx_section_documents_section_id ON section_documents (section_id);
 
+--######## create table section_dictionaries #########################
+CREATE SEQUENCE IF NOT EXISTS seq_section_dictionaries
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE seq_section_dictionaries OWNER TO kbase;
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS section_dictionaries
+(
+    id bigint NOT NULL DEFAULT nextval('seq_section_dictionaries'::regclass),
+    section_id bigint NOT NULL,
+    type_id smallint NOT NULL CHECK (type_id IN (1, 2, 3)),
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    value text COLLATE pg_catalog."default",
+    descr character varying(500) COLLATE pg_catalog."default",
+    rating integer NOT NULL DEFAULT 0,
+    reverse smallint NOT NULL DEFAULT 0 CHECK (reverse IN (0, 1)),
+    status smallint NOT NULL DEFAULT 1 CHECK (status IN (0, 1)),
+    date_created timestamp without time zone DEFAULT now(),
+    date_modified timestamp without time zone DEFAULT now(),
+    user_id_created bigint NOT NULL,
+    user_id_modified bigint NOT NULL,
+    CONSTRAINT pk_section_dictionaries_id PRIMARY KEY (id),
+    CONSTRAINT fk_section_dictionaries_section_id FOREIGN KEY (section_id)
+        REFERENCES sections (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_section_dictionaries_user_id_created FOREIGN KEY (user_id_created)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_section_dictionaries_user_id_modified FOREIGN KEY (user_id_modified)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE IF EXISTS section_dictionaries OWNER to kbase;
+GRANT ALL ON TABLE section_dictionaries TO kbase;
+
+COMMENT ON TABLE section_dictionaries IS 'Словники для навчання';
+COMMENT ON COLUMN section_dictionaries.type_id IS 'Тип інформації: 1 - word, 2 - phrase, 3 - text';
+COMMENT ON COLUMN section_dictionaries.rating IS 'Рейтинг: як часто показувати при навчанні';
+COMMENT ON COLUMN section_dictionaries.reverse IS '1 - показувати в зворотньому напрямку';
+COMMENT ON COLUMN section_dictionaries.status IS '0 - не включати в навчання, 1 - включати';
+
+CREATE INDEX IF NOT EXISTS idx_section_dictionaries_section_id ON section_dictionaries (section_id);
+CREATE INDEX IF NOT EXISTS idx_section_dictionaries_type_id ON section_dictionaries (type_id);
+CREATE INDEX IF NOT EXISTS idx_section_dictionaries_status ON section_dictionaries (status);
+CREATE INDEX IF NOT EXISTS idx_section_dictionaries_rating ON section_dictionaries (rating);
 
 --<<
