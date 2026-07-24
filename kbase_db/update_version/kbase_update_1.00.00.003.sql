@@ -869,7 +869,7 @@ COMMENT ON COLUMN section_document_info_block_components_number.section_document
 
 CREATE INDEX IF NOT EXISTS idx_section_document_info_block_components_number_header_id ON section_document_info_block_components_number (section_document_info_block_header_id);
 CREATE INDEX IF NOT EXISTS idx_section_document_info_block_components_number_type_component_id ON section_document_info_block_components_number (section_document_info_block_type_component_id);
-*/
+
 --######## create table section_documents #########################
 CREATE SEQUENCE IF NOT EXISTS seq_section_documents
     INCREMENT 1
@@ -965,5 +965,46 @@ CREATE INDEX IF NOT EXISTS idx_section_dictionaries_section_id ON section_dictio
 CREATE INDEX IF NOT EXISTS idx_section_dictionaries_type_id ON section_dictionaries (type_id);
 CREATE INDEX IF NOT EXISTS idx_section_dictionaries_status ON section_dictionaries (status);
 CREATE INDEX IF NOT EXISTS idx_section_dictionaries_rating ON section_dictionaries (rating);
+*/
+--#########################################################################
+/*
+ALTER TABLE section_document_info_block_headers 
+ADD CONSTRAINT uk_section_document_info_block_headers_section_position 
+UNIQUE (section_id, position);
+
+--######## create triggers ################################################
+-- Trigger function to update sections.date_modified_info
+CREATE OR REPLACE FUNCTION trg_update_section_date_modified_info()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE sections
+    SET date_modified_info = now()
+    WHERE id = COALESCE(NEW.section_id, OLD.section_id);
+    RETURN COALESCE(NEW, OLD);
+END;
+$$;
+
+-- Trigger on section_document_info_block_headers
+DROP TRIGGER IF EXISTS trg_section_document_info_block_headers_update_section_info
+ON section_document_info_block_headers;
+
+CREATE TRIGGER trg_section_document_info_block_headers_update_section_info
+AFTER INSERT OR UPDATE OR DELETE ON section_document_info_block_headers
+FOR EACH ROW
+EXECUTE FUNCTION trg_update_section_date_modified_info();
+
+-- Trigger on section_dictionaries
+DROP TRIGGER IF EXISTS trg_section_dictionaries_update_section_info
+ON section_dictionaries;
+
+CREATE TRIGGER trg_section_dictionaries_update_section_info
+AFTER INSERT OR UPDATE OR DELETE ON section_dictionaries
+FOR EACH ROW
+EXECUTE FUNCTION trg_update_section_date_modified_info();
+*/
+
+
 
 --<<
