@@ -1,6 +1,6 @@
 -->>
 SET search_path = kbase, public, pg_catalog;
-/*
+
 -- ######## перевіряємо щоб БД була попередньої версії ############################
 do $$
 <<check_version>>
@@ -965,9 +965,9 @@ CREATE INDEX IF NOT EXISTS idx_section_dictionaries_section_id ON section_dictio
 CREATE INDEX IF NOT EXISTS idx_section_dictionaries_type_id ON section_dictionaries (type_id);
 CREATE INDEX IF NOT EXISTS idx_section_dictionaries_status ON section_dictionaries (status);
 CREATE INDEX IF NOT EXISTS idx_section_dictionaries_rating ON section_dictionaries (rating);
-*/
+
 --#########################################################################
-/*
+
 ALTER TABLE section_document_info_block_headers 
 ADD CONSTRAINT uk_section_document_info_block_headers_section_position 
 UNIQUE (section_id, position);
@@ -1003,8 +1003,4 @@ CREATE TRIGGER trg_section_dictionaries_update_section_info
 AFTER INSERT OR UPDATE OR DELETE ON section_dictionaries
 FOR EACH ROW
 EXECUTE FUNCTION trg_update_section_date_modified_info();
-*/
-
-
-
 --<<
