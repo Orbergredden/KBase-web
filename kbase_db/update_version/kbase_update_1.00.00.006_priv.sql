@@ -100,6 +100,73 @@ GRANT USAGE, SELECT ON SEQUENCE seq_groups TO kbase;
 GRANT USAGE, SELECT ON SEQUENCE seq_user_groups TO kbase;
 GRANT USAGE, SELECT ON SEQUENCE seq_section_group_access TO kbase;
 */
---######## 
+--######## role_privileges ##############################################
+-- Add date/user columns with constraints (matching roles table pattern)
+/*ALTER TABLE kbase.role_privileges
+    ADD COLUMN date_created TIMESTAMPTZ DEFAULT now(),
+    ADD COLUMN date_modified TIMESTAMPTZ DEFAULT now(),
+    ADD COLUMN user_id_created BIGINT DEFAULT 1,
+    ADD COLUMN user_id_modified BIGINT DEFAULT 1;
 
+-- Add FK constraints for user_id_created/modified
+ALTER TABLE kbase.role_privileges
+    ADD CONSTRAINT fk_role_privileges_user_id_created 
+        FOREIGN KEY (user_id_created) REFERENCES kbase.users(id),
+    ADD CONSTRAINT fk_role_privileges_user_id_modified 
+        FOREIGN KEY (user_id_modified) REFERENCES kbase.users(id);
+
+-- Delete all records
+TRUNCATE TABLE kbase.role_privileges RESTART IDENTITY CASCADE;
+
+--######## kbase.privileges #####################################
+-- Delete all existing privileges and reset sequence
+TRUNCATE TABLE kbase.privileges RESTART IDENTITY CASCADE;
+
+-- Insert new privileges
+INSERT INTO kbase.privileges (name, descr, user_id_created, user_id_modified) VALUES
+    ('admin',           'Full access: edit users, roles, privileges, global settings', 1, 1),
+    ('admin-view',      'View users, roles, privileges, global settings', 1, 1),
+    ('icons-edit',      'Edit icons', 1, 1),
+    ('icons-view',      'View icons', 1, 1),
+    ('logs-view',       'View logs', 1, 1),
+    ('sections-full',   'Full access to all sections', 1, 1),
+    ('sections-edit',   'Edit sections', 1, 1),
+    ('sections-view',   'View sections', 1, 1),
+    ('section_categories-edit',       'Edit section categories', 1, 1),
+    ('section_categories-view',       'View section categories', 1, 1),
+    ('section_document_info_block_styles-edit', 'Edit document info block styles', 1, 1),
+    ('section_document_info_block_styles-view', 'View document info block styles', 1, 1),
+    ('templates-edit',  'Edit templates', 1, 1),
+    ('templates-view',  'View templates', 1, 1);
+
+--########  ###############################################
+-- 1. Add groups
+INSERT INTO kbase.groups (name, descr, is_active, user_id_created, user_id_modified) VALUES
+    ('Адміністратори',  'Full system access',                true, 1, 1),
+    ('Розробники',      'Developers with edit access',       true, 1, 1),
+    ('Тестери',         'Testers with view/edit access',     true, 1, 1),
+    ('Супровід',        'Support team with view/edit access',true, 1, 1),
+    ('Менеджери',       'Managers with view access',         true, 1, 1),
+    ('Бухгалтери',      'Accountants with limited access',   true, 1, 1);
+
+-- 2. Assign admin user (id=1) to "Адміністратори" group
+INSERT INTO kbase.user_groups (user_id, group_id, descr, user_id_created, user_id_modified)
+SELECT 1, g.id, 'Admin group assignment', 1, 1
+FROM kbase.groups g
+WHERE g.name = 'Адміністратори';
+
+-- 3. Assign privileges to ROLE_ADMIN (id=1)
+INSERT INTO kbase.role_privileges (role_id, privilege_id)
+SELECT 1, p.id
+FROM kbase.privileges p
+WHERE p.name IN (
+    'admin',
+    'icons-edit',
+    'logs-view',
+    'sections-full',
+    'section_categories-edit',
+    'section_document_info_block_styles-edit',
+    'templates-edit'
+);
+*/
 --<<
