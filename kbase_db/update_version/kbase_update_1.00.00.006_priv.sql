@@ -1,6 +1,6 @@
 -->>
 SET search_path = kbase, public, pg_catalog;
-/*
+
 -- ######## перевіряємо щоб БД була попередньої версії ############################
 do $$
 <<check_version>>
@@ -99,10 +99,10 @@ GRANT ALL ON section_group_access TO kbase;
 GRANT USAGE, SELECT ON SEQUENCE seq_groups TO kbase;
 GRANT USAGE, SELECT ON SEQUENCE seq_user_groups TO kbase;
 GRANT USAGE, SELECT ON SEQUENCE seq_section_group_access TO kbase;
-*/
+
 --######## role_privileges ##############################################
 -- Add date/user columns with constraints (matching roles table pattern)
-/*ALTER TABLE kbase.role_privileges
+ALTER TABLE kbase.role_privileges
     ADD COLUMN date_created TIMESTAMPTZ DEFAULT now(),
     ADD COLUMN date_modified TIMESTAMPTZ DEFAULT now(),
     ADD COLUMN user_id_created BIGINT DEFAULT 1,
@@ -168,5 +168,4 @@ WHERE p.name IN (
     'section_document_info_block_styles-edit',
     'templates-edit'
 );
-*/
 --<<
