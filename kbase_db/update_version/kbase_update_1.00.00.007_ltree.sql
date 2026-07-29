@@ -39,7 +39,18 @@ where alias = 'VERSION_DB_END_DATE'
 -- 1. Увімкнення розширення
 CREATE EXTENSION IF NOT EXISTS ltree;
 */
+/*
+-- 2. Додати колонку section_path до існуючої таблиці sections
+ALTER TABLE sections 
+ADD COLUMN section_path ltree;
 
+-- 3. Створити індекси для швидкого пошуку
+-- GIST індекс — для операторів @>, <@, ~ (пошук предків/нащадків)
+CREATE INDEX idx_sections_path_gist ON sections USING GIST (section_path);
+
+-- BTREE індекс — для сортування, групування, унікальності
+CREATE INDEX idx_sections_path_btree ON sections USING BTREE (section_path);
+*/
 
 
 
