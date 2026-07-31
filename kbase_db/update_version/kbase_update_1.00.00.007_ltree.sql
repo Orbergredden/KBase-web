@@ -1,6 +1,6 @@
 -->>
 SET search_path = kbase, ltree, public, pg_catalog;
-/*
+
 -- ######## перевіряємо щоб БД була попередньої версії ############################
 do $$
 <<check_version>>
@@ -49,10 +49,10 @@ CREATE INDEX idx_sections_path_gist ON sections USING GIST (section_path);
 
 -- BTREE індекс — для сортування, групування, унікальності
 CREATE INDEX idx_sections_path_btree ON sections USING BTREE (section_path);
-*/
+
 --######## add triggers #################################################
 -- Функція для автоматичного розрахунку шляху при INSERT
-/*CREATE OR REPLACE FUNCTION trg_section_set_path()
+CREATE OR REPLACE FUNCTION trg_section_set_path()
 RETURNS TRIGGER AS $$
 -- Функція для автоматичного розрахунку шляху при INSERT
 BEGIN
@@ -224,9 +224,4 @@ END;
 $function$;
 
 GRANT USAGE ON SCHEMA ltree TO kbase, kbase_viewer;
-*/
-
-
-
-
 --<<
