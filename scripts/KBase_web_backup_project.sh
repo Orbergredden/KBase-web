@@ -13,7 +13,7 @@ mkdir -p "$BACKUP_DIR"
 BACKUP_DATE=$(date "+%Y-%m-%d_%H:%M:%S")
 ZIP_FILE="$BACKUP_DIR/KBase_web_${BACKUP_DATE}.zip"
 
-echo "=== Початок створення архіву проекту ==="
+echo "===================================== Початок створення архіву проекту ==="
 echo "Джерело: $PROJECT_DIR"
 echo "Архів: $ZIP_FILE"
 
@@ -30,3 +30,5 @@ else
     echo "Помилка при створенні архіву проекту!" >&2
     exit 1
 fi
+
+echo "<<======================= <<"

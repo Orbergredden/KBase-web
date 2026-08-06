@@ -19,7 +19,7 @@ mkdir -p "$BACKUP_DIR"
 BACKUP_DATE=$(date "+%Y-%m-%d_%H:%M:%S")
 BACKUP_FILE="$BACKUP_DIR/${DB_NAME}_${BACKUP_DATE}.sql"
 
-echo "=== Початок створення бекапу бази даних: $DB_NAME ==="
+echo "======================= Початок створення бекапу бази даних: $DB_NAME =========="
 echo "Шлях до файлу: $BACKUP_FILE"
 
 # Запуск утиліти pg_dump для створення бекапу у форматі звичайного SQL
@@ -49,3 +49,5 @@ fi
 
 # Очищення змінної пароля для безпеки
 unset PGPASSWORD
+
+echo "<<======================= <<"
